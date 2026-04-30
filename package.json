@@ -1,0 +1,14 @@
+{
+  "name": "pinauna-club",
+  "version": "1.0.0",
+  "description": "Pinaúna Club — Site oficial com matrícula integrada ao Asaas",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev": "netlify dev"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.0.0"
+  }
+}
