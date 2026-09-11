@@ -69,8 +69,27 @@ async function asaasFetch(path, method = "GET", body = null) {
   const opts = { method, headers: asaasHeaders() };
   if (body) opts.body = JSON.stringify(body);
   const res = await fetch(`${ASAAS_BASE}${path}`, opts);
-  const data = await res.json();
-  if (!res.ok) throw new Error(data?.errors?.[0]?.description || `Asaas error ${res.status}`);
+  const texto = await res.text();
+
+  let data = null;
+  if (texto) {
+    try {
+      data = JSON.parse(texto);
+    } catch (e) {
+      // Asaas respondeu algo que não é JSON (ex.: página de erro do proxy/CDN)
+      console.error(`Asaas resposta não-JSON [${method} ${path}] status ${res.status}:`, texto.slice(0, 500));
+      throw new Error(`Asaas retornou resposta inválida (status ${res.status}). Verifique a ASAAS_API_KEY no Netlify.`);
+    }
+  }
+
+  if (!res.ok) {
+    console.error(`Asaas erro [${method} ${path}] status ${res.status}:`, JSON.stringify(data));
+    throw new Error(
+      data?.errors?.[0]?.description ||
+      `Asaas error ${res.status}${texto ? "" : " (resposta vazia — provável ASAAS_API_KEY ausente ou incorreta)"}`
+    );
+  }
+
   return data;
 }
 
