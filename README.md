@@ -29,9 +29,7 @@ pinauna/
 4. No painel: **Menu → Integrações → API**
 5. Copie sua **chave de API** (começa com `$aact_...`)
 
-> ⚠️ Para testes, use o ambiente sandbox: https://sandbox.asaas.com  
-> A chave sandbox começa com `$aact_YTU5YTE0M...`  
-> Quando tudo funcionar, troque para a API de produção.
+> ⚠️ O projeto está configurado para produção (cobranças reais). Copie a chave do painel em https://www.asaas.com (não do sandbox). Veja o Passo 4 se preferir testar no sandbox antes.
 
 ---
 
@@ -79,21 +77,15 @@ Essa é a parte mais importante — a chave do Asaas **nunca deve ficar no códi
 
 ---
 
-## Passo 4 — Trocar sandbox por produção
+## Passo 4 — Ambiente do Asaas (produção x sandbox)
 
-Quando quiser ativar pagamentos reais:
+O código já está apontando para a API de **produção** (`https://api.asaas.com/api/v3`), então cobranças geradas são reais. A `ASAAS_API_KEY` configurada no Netlify precisa ser uma chave de **produção** (painel em https://www.asaas.com, não o sandbox) — se colar uma chave sandbox aqui, o Asaas recusa com o erro "chave não pertence a este ambiente".
 
-1. Abra `netlify/functions/matricula.js`
-2. Na linha 1, mude:
-```js
-// ANTES (testes):
-const ASAAS_BASE = "https://sandbox.asaas.com/api/v3";
+Se quiser voltar a testar sem gerar cobranças reais:
 
-// DEPOIS (produção):
-const ASAAS_BASE = "https://api.asaas.com/api/v3";
-```
-3. No Netlify, atualize a variável `ASAAS_API_KEY` com a chave de **produção**
-4. Redeploy
+1. Abra `netlify/functions/matricula.js` e troque a linha do `ASAAS_BASE` de volta para `https://sandbox.asaas.com/api/v3`
+2. No Netlify, troque a `ASAAS_API_KEY` pela chave de **sandbox** (painel em https://sandbox.asaas.com)
+3. Redeploy
 
 ---
 
