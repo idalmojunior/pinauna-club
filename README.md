@@ -9,11 +9,12 @@ Sistema completo: landing page + matrícula online + cobrança automática via A
 ```
 pinauna/
 ├── public/
-│   └── index.html          ← Landing page completa
+│   └── index.html            ← Landing page completa (planos, termo, modal de matrícula)
 ├── netlify/
 │   └── functions/
-│       └── matricula.js    ← API de matrícula + integração Asaas
-├── netlify.toml            ← Configuração do Netlify
+│       ├── matricula.js      ← API de matrícula + integração Asaas + registro do termo
+│       └── consentimentos.js ← Consulta protegida dos comprovantes de aceite do termo
+├── netlify.toml              ← Configuração do Netlify
 ├── package.json
 └── README.md
 ```
@@ -62,17 +63,19 @@ git push -u origin main
 
 ---
 
-## Passo 3 — Configurar a variável de ambiente
+## Passo 3 — Configurar as variáveis de ambiente
 
 Essa é a parte mais importante — a chave do Asaas **nunca deve ficar no código**.
 
 1. No painel do Netlify, vá em **Site settings → Environment variables**
-2. Clique em **Add a variable**
-3. Configure:
+2. Clique em **Add a variable** e configure:
    - **Key:** `ASAAS_API_KEY`
    - **Value:** sua chave copiada do Asaas (ex: `$aact_YTU5YTE0M...`)
+3. Adicione uma segunda variável para proteger a consulta dos comprovantes de aceite do termo:
+   - **Key:** `ADMIN_API_KEY`
+   - **Value:** uma senha forte qualquer, só sua (ex: gere uma em https://1password.com/password-generator/) — **não** é a chave do Asaas
 4. Clique em **Save**
-5. Vá em **Deploys → Trigger deploy** para reaplicar com a variável
+5. Vá em **Deploys → Trigger deploy** para reaplicar com as variáveis
 
 ---
 
@@ -106,13 +109,18 @@ Clica em "Matricular agora"
 Preenche nome, e-mail, CPF, WhatsApp
 (+ código de indicação se tiver)
        ↓
+Lê e aceita o termo de responsabilidade + declaração de saúde
+(obrigatório — sem isso não avança)
+       ↓
 Frontend envia POST /api/matricula
        ↓
 netlify/functions/matricula.js:
-  1. Busca ou cria cliente no Asaas
-  2. Cria assinatura recorrente (ciclo correto)
-  3. Se tem indicação válida → aplica desconto no indicador
-  4. Retorna link de pagamento
+  1. Rejeita se o termo não foi aceito
+  2. Busca ou cria cliente no Asaas
+  3. Cria assinatura recorrente (ciclo correto)
+  4. Se tem indicação válida → aplica desconto no indicador
+  5. Grava o comprovante do aceite (Netlify Blobs + observação no Asaas)
+  6. Retorna link de pagamento
        ↓
 Aluno é redirecionado para página de pagamento Asaas
 (escolhe Pix, cartão ou boleto)
@@ -120,6 +128,29 @@ Aluno é redirecionado para página de pagamento Asaas
 Asaas confirma pagamento → envia e-mail para o aluno
 Asaas notifica você via dashboard + e-mail
 ```
+
+---
+
+## Termo de responsabilidade e declaração de saúde
+
+Antes de confirmar a matrícula, o aluno passa por uma etapa obrigatória no modal:
+
+1. Lê o termo de responsabilidade (riscos da natação em águas abertas) e a declaração de saúde (não ter condição que impeça a prática, ou ter liberação médica).
+2. Marca o checkbox "Li e concordo...". Sem isso, o botão de matrícula não avança — a validação existe tanto no navegador quanto na função (o backend rejeita a matrícula se `termo_aceito` não vier `true`).
+3. Ao confirmar, o servidor grava um **registro de prova** com nome, CPF, e-mail, versão do termo, horário do servidor e do navegador, IP e user-agent — isso fica salvo no **Netlify Blobs** (armazenamento incluso no plano Free) e também é anotado nas observações do cliente no **Asaas**, como uma segunda cópia.
+
+⚠️ **Importante:** o texto do termo incluído no site é um rascunho de referência, escrito para cobrir os pontos mais comuns (riscos do mar, declaração de saúde, isenção por riscos inerentes, validade do aceite eletrônico). Não é aconselhamento jurídico — vale a pena mandar para um advogado revisar antes de operar de verdade, principalmente a cláusula de isenção de responsabilidade, que tem limites legais (ela não afasta responsabilidade por negligência grave/dolo da escola).
+
+### Como consultar um comprovante de aceite depois
+
+Se precisar comprovar que um aluno aceitou o termo (por exemplo, após um incidente), use a função `consentimentos`:
+
+```bash
+curl "https://SEU-SITE.netlify.app/api/consentimentos?cpf=12345678900" \
+  -H "x-admin-key: SUA_ADMIN_API_KEY"
+```
+
+Sem informar `cpf`, a chamada retorna todos os registros já gravados. Guarde a `ADMIN_API_KEY` como faria com uma senha — quem tiver essa chave consegue ler os dados pessoais dos alunos.
 
 ---
 

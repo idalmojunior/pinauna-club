@@ -3,12 +3,16 @@
  * Netlify Function: POST /api/matricula
  *
  * Fluxo:
- * 1. Recebe dados do aluno + plano escolhido
- * 2. Cria (ou busca) cliente no Asaas
- * 3. Cria assinatura recorrente com o ciclo correto
- * 4. Se tiver código de indicação válido, aplica desconto de 1 mês no indicador
- * 5. Retorna link de pagamento para o aluno
+ * 1. Recebe dados do aluno + plano escolhido + aceite do termo de responsabilidade
+ * 2. Valida que o termo foi aceito
+ * 3. Cria (ou busca) cliente no Asaas
+ * 4. Cria assinatura recorrente com o ciclo correto
+ * 5. Se tiver código de indicação válido, aplica desconto de 1 mês no indicador
+ * 6. Registra o aceite do termo (Netlify Blobs + observação no cliente Asaas)
+ * 7. Retorna link de pagamento para o aluno
  */
+
+const { getStore } = require("@netlify/blobs");
 
 const ASAAS_BASE = "https://sandbox.asaas.com/api/v3"; // Troque para https://api.asaas.com/api/v3 em produção
 
@@ -126,6 +130,43 @@ async function aplicarDescontoIndicador(cpfIndicador, valorDesconto) {
   return { ok: true, indicadorId };
 }
 
+/** Extrai o IP real do aluno a partir dos headers repassados pelo Netlify */
+function getClientIp(event) {
+  const headers = event.headers || {};
+  const forwarded = headers["x-nf-client-connection-ip"] || headers["client-ip"] || headers["x-forwarded-for"];
+  if (!forwarded) return null;
+  return forwarded.split(",")[0].trim();
+}
+
+/**
+ * Grava o registro de aceite do termo de responsabilidade + declaração de saúde
+ * como prova, num Netlify Blobs store dedicado. Não bloqueia a matrícula se falhar.
+ */
+async function registrarConsentimento(registro) {
+  try {
+    const store = getStore("consentimentos-pinauna");
+    const chave = `${registro.cpf}__${Date.now()}`;
+    await store.setJSON(chave, registro);
+    return chave;
+  } catch (err) {
+    console.error("Falha ao gravar consentimento no Blobs:", err.message);
+    return null;
+  }
+}
+
+/** Acrescenta uma nota de aceite do termo nas observações do cliente no Asaas (best-effort) */
+async function anotarConsentimentoNoAsaas(customerId, nota) {
+  try {
+    const cliente = await asaasFetch(`/customers/${customerId}`);
+    const observacoesAtuais = cliente.observations ? `${cliente.observations}\n` : "";
+    await asaasFetch(`/customers/${customerId}`, "POST", {
+      observations: `${observacoesAtuais}${nota}`.slice(0, 3900), // Asaas limita o campo a 4000 caracteres
+    });
+  } catch (err) {
+    console.error("Falha ao anotar consentimento no Asaas:", err.message);
+  }
+}
+
 // ── Handler principal ──────────────────────────────────────────────────────
 
 exports.handler = async (event) => {
@@ -145,11 +186,19 @@ exports.handler = async (event) => {
 
   try {
     const body = JSON.parse(event.body || "{}");
-    const { nome, email, cpf, fone, plano_id, codigo_indicacao } = body;
+    const {
+      nome, email, cpf, fone, plano_id, codigo_indicacao,
+      termo_aceito, termo_versao, termo_aceito_em,
+    } = body;
 
     // Validações básicas
     if (!nome || !email || !cpf || !fone || !plano_id) {
       return { statusCode: 400, headers, body: JSON.stringify({ erro: "Campos obrigatórios: nome, email, cpf, fone, plano_id" }) };
+    }
+
+    // Termo de responsabilidade e declaração de saúde é obrigatório
+    if (termo_aceito !== true || !termo_versao) {
+      return { statusCode: 400, headers, body: JSON.stringify({ erro: "É necessário aceitar o termo de responsabilidade para concluir a matrícula." }) };
     }
 
     const plano = PLANOS[plano_id];
@@ -174,7 +223,30 @@ exports.handler = async (event) => {
       indicacaoResultado = await aplicarDescontoIndicador(codigo_indicacao, valorMensal);
     }
 
-    // 5. Retornar link de pagamento da primeira cobrança
+    // 5. Registrar o aceite do termo (prova de consentimento) — não bloqueia a matrícula se falhar
+    const cpfLimpo = cpf.replace(/\D/g, "");
+    const registroConsentimento = {
+      nome,
+      email,
+      cpf: cpfLimpo,
+      fone: fone.replace(/\D/g, ""),
+      plano_id,
+      plano_nome: plano.nome,
+      cliente_id: cliente.id,
+      assinatura_id: assinatura.id,
+      termo_versao,
+      termo_aceito_em: termo_aceito_em || null,       // horário do navegador do aluno
+      termo_registrado_em: hoje.toISOString(),         // horário do servidor (fonte da verdade)
+      ip: getClientIp(event),
+      user_agent: (event.headers && event.headers["user-agent"]) || null,
+    };
+    const consentimentoId = await registrarConsentimento(registroConsentimento);
+    await anotarConsentimentoNoAsaas(
+      cliente.id,
+      `Termo de responsabilidade e declaração de saúde aceito em ${registroConsentimento.termo_registrado_em} (versão ${termo_versao}, IP ${registroConsentimento.ip || "desconhecido"}).`
+    );
+
+    // 6. Retornar link de pagamento da primeira cobrança
     const cobrancas = await asaasFetch(`/subscriptions/${assinatura.id}/payments?limit=1`);
     const linkPagamento = cobrancas.data?.[0]?.invoiceUrl || null;
 
@@ -187,8 +259,9 @@ exports.handler = async (event) => {
         link_pagamento: linkPagamento,
         assinatura_id: assinatura.id,
         cliente_id: cliente.id,
+        consentimento_id: consentimentoId,
         // Código de indicação do NOVO aluno = CPF (simplificado)
-        seu_codigo_indicacao: cpf.replace(/\D/g, ""),
+        seu_codigo_indicacao: cpfLimpo,
         indicacao: indicacaoResultado,
       }),
     };

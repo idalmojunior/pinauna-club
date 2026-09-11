@@ -1972,9 +1972,39 @@
 
       <div id="m_erro" style="display:none;background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.3);border-radius:8px;padding:12px 16px;font-size:0.9rem;color:#e74c3c;margin-bottom:16px;"></div>
 
-      <button id="m_btnEnviar" onclick="enviarMatricula()" style="width:100%;background:var(--orange);color:#000;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:1.1rem;letter-spacing:1px;text-transform:uppercase;padding:16px;border-radius:8px;border:none;cursor:pointer;transition:background 0.2s;">
-        Confirmar e ir para pagamento →
+      <button id="m_btnEnviar" onclick="avancarParaTermo()" style="width:100%;background:var(--orange);color:#000;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:1.1rem;letter-spacing:1px;text-transform:uppercase;padding:16px;border-radius:8px;border:none;cursor:pointer;transition:background 0.2s;">
+        Continuar →
       </button>
+    </div>
+
+    <!-- Etapa Termo: Responsabilidade e Saúde -->
+    <div id="etapaTermo" style="display:none;">
+      <div class="section-tag">Matrícula Online</div>
+      <h2 style="margin-bottom:4px;">Termo de <em>responsabilidade</em></h2>
+      <p style="font-size:0.9rem;color:rgba(255,255,255,0.45);margin-bottom:20px;">Leia com atenção antes de continuar.</p>
+
+      <div style="max-height:260px;overflow-y:auto;background:#0a0a0a;border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:16px 18px;font-size:0.85rem;line-height:1.6;color:rgba(255,255,255,0.75);margin-bottom:20px;">
+        <p style="margin-bottom:10px;"><strong style="color:var(--orange);">1. Natureza da atividade e riscos inerentes.</strong> A natação em águas abertas (mar) é praticada em ambiente natural e envolve riscos que não existem em piscina, incluindo, mas não se limitando a: correntes marítimas, variação de maré, ondulação, baixa visibilidade, presença de fauna marinha, exposição solar prolongada, fadiga e risco de afogamento. Declaro estar ciente desses riscos e que participo por livre e espontânea vontade.</p>
+        <p style="margin-bottom:10px;"><strong style="color:var(--orange);">2. Declaração de saúde.</strong> Declaro estar em condições de saúde física compatíveis com a prática de natação em águas abertas, sem doenças cardíacas, respiratórias, neurológicas ou outras condições que possam colocar em risco minha segurança durante a atividade — ou, havendo alguma condição preexistente, declaro ter autorização médica para a prática e me comprometo a informá-la previamente à Pinaúna Club.</p>
+        <p style="margin-bottom:10px;"><strong style="color:var(--orange);">3. Boas práticas de segurança.</strong> Tenho ciência de que a Pinaúna Club e seus instrutores adotam procedimentos de segurança (avaliação das condições do mar, boias de sinalização, acompanhamento em grupo, entre outros), mas que nenhum procedimento elimina totalmente os riscos inerentes ao ambiente natural descritos no item 1.</p>
+        <p style="margin-bottom:10px;"><strong style="color:var(--orange);">4. Isenção de responsabilidade.</strong> Nos termos da legislação aplicável, isento a Pinaúna Club, seus instrutores e prepostos de responsabilidade por acidentes, lesões ou danos decorrentes exclusivamente dos riscos inerentes à atividade descritos neste termo, ou de informação falsa ou omitida por mim sobre minha condição de saúde, ressalvados os casos de dolo ou culpa grave comprovada da escola.</p>
+        <p style="margin-bottom:10px;"><strong style="color:var(--orange);">5. Atendimento de emergência.</strong> Autorizo, em caso de emergência e na impossibilidade de contato imediato comigo, que a Pinaúna Club tome as medidas de primeiros socorros e acionamento de serviços de emergência (SAMU/Corpo de Bombeiros) que julgar necessárias.</p>
+        <p style="margin-bottom:0;"><strong style="color:var(--orange);">6. Validade do aceite eletrônico.</strong> Este aceite tem validade jurídica nos termos da Lei nº 12.965/2014 (Marco Civil da Internet) e da MP nº 2.200-2/2001, sendo registrados nome, CPF, e-mail, data, hora e endereço IP no momento da confirmação como prova da manifestação de vontade.</p>
+      </div>
+
+      <label style="display:flex;align-items:flex-start;gap:10px;font-size:0.88rem;color:rgba(255,255,255,0.75);margin-bottom:20px;cursor:pointer;">
+        <input id="m_aceiteTermo" type="checkbox" style="margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:var(--orange);cursor:pointer;">
+        <span>Li e concordo com o termo de responsabilidade acima e declaro estar em condições de saúde para praticar natação em águas abertas.</span>
+      </label>
+
+      <div id="m_erroTermo" style="display:none;background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.3);border-radius:8px;padding:12px 16px;font-size:0.9rem;color:#e74c3c;margin-bottom:16px;"></div>
+
+      <div style="display:flex;gap:12px;">
+        <button onclick="voltarParaDados()" style="flex:0 0 auto;background:transparent;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.5);padding:14px 20px;border-radius:8px;cursor:pointer;font-size:0.9rem;">← Voltar</button>
+        <button id="m_btnAceitar" onclick="enviarMatricula()" style="flex:1;background:var(--orange);color:#000;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:1.1rem;letter-spacing:1px;text-transform:uppercase;padding:16px;border-radius:8px;border:none;cursor:pointer;transition:background 0.2s;">
+          Aceitar e ir para pagamento →
+        </button>
+      </div>
       <p style="text-align:center;font-size:0.78rem;color:rgba(255,255,255,0.25);margin-top:12px;">Você será redirecionado para a página de pagamento segura do Asaas.<br>Aceita Pix, cartão de crédito e boleto.</p>
     </div>
 
@@ -2140,6 +2170,8 @@
 
   // ── MATRÍCULA ─────────────────────────────────────────────────────────────
 
+  const TERMO_VERSAO = 'pinauna-termo-v1-2026-09-11';
+
   function abrirMatricula() {
     const p = PRECOS[diasAtivo];
     const per = PERIODOS[periodoAtivo];
@@ -2148,10 +2180,38 @@
     document.getElementById('resumoPlano').textContent =
       p.label + ' — ' + per.label + ' · R$' + total;
     document.getElementById('etapa1').style.display = 'block';
+    document.getElementById('etapaTermo').style.display = 'none';
     document.getElementById('etapa2').style.display = 'none';
     document.getElementById('m_erro').style.display = 'none';
+    document.getElementById('m_erroTermo').style.display = 'none';
+    document.getElementById('m_aceiteTermo').checked = false;
     document.getElementById('modalOverlay').style.display = 'block';
     document.body.style.overflow = 'hidden';
+  }
+
+  function avancarParaTermo() {
+    const erroEl = document.getElementById('m_erro');
+    erroEl.style.display = 'none';
+
+    const nome = document.getElementById('m_nome').value.trim();
+    const email = document.getElementById('m_email').value.trim();
+    const cpf = document.getElementById('m_cpf').value.trim();
+    const fone = document.getElementById('m_fone').value.trim();
+
+    if (!nome || !email || !cpf || !fone) {
+      erroEl.textContent = 'Preencha todos os campos obrigatórios.';
+      erroEl.style.display = 'block';
+      return;
+    }
+
+    document.getElementById('etapa1').style.display = 'none';
+    document.getElementById('etapaTermo').style.display = 'block';
+  }
+
+  function voltarParaDados() {
+    document.getElementById('m_erroTermo').style.display = 'none';
+    document.getElementById('etapaTermo').style.display = 'none';
+    document.getElementById('etapa1').style.display = 'block';
   }
 
   function fecharMatricula() {
@@ -2173,8 +2233,8 @@
   });
 
   async function enviarMatricula() {
-    const btn = document.getElementById('m_btnEnviar');
-    const erroEl = document.getElementById('m_erro');
+    const btn = document.getElementById('m_btnAceitar');
+    const erroEl = document.getElementById('m_erroTermo');
     erroEl.style.display = 'none';
 
     const nome = document.getElementById('m_nome').value.trim();
@@ -2182,9 +2242,10 @@
     const cpf = document.getElementById('m_cpf').value.trim();
     const fone = document.getElementById('m_fone').value.trim();
     const indicacao = document.getElementById('m_indicacao').value.trim();
+    const aceitouTermo = document.getElementById('m_aceiteTermo').checked;
 
-    if (!nome || !email || !cpf || !fone) {
-      erroEl.textContent = 'Preencha todos os campos obrigatórios.';
+    if (!aceitouTermo) {
+      erroEl.textContent = 'É necessário aceitar o termo de responsabilidade para continuar.';
       erroEl.style.display = 'block';
       return;
     }
@@ -2199,14 +2260,20 @@
       const res = await fetch('/api/matricula', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome, email, cpf, fone, plano_id, codigo_indicacao: indicacao || null }),
+        body: JSON.stringify({
+          nome, email, cpf, fone, plano_id,
+          codigo_indicacao: indicacao || null,
+          termo_aceito: true,
+          termo_versao: TERMO_VERSAO,
+          termo_aceito_em: new Date().toISOString(),
+        }),
       });
       const data = await res.json();
 
       if (!res.ok || !data.ok) throw new Error(data.erro || 'Erro ao processar matrícula');
 
       // Sucesso
-      document.getElementById('etapa1').style.display = 'none';
+      document.getElementById('etapaTermo').style.display = 'none';
       document.getElementById('etapa2').style.display = 'block';
       document.getElementById('m_linkPagamento').href = data.link_pagamento || '#';
       document.getElementById('m_codigoIndicacao').textContent =
@@ -2216,7 +2283,7 @@
       erroEl.textContent = err.message;
       erroEl.style.display = 'block';
     } finally {
-      btn.textContent = 'Confirmar e ir para pagamento →';
+      btn.textContent = 'Aceitar e ir para pagamento →';
       btn.disabled = false;
     }
   }

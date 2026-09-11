@@ -8,6 +8,9 @@
   "scripts": {
     "dev": "netlify dev"
   },
+  "dependencies": {
+    "@netlify/blobs": "^11.0.3"
+  },
   "devDependencies": {
     "netlify-cli": "^17.0.0"
   }
