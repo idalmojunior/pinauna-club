@@ -12,7 +12,7 @@
  *   x-admin-key: <valor da ADMIN_API_KEY>
  */
 
-const { getStore } = require("@netlify/blobs");
+const { getStoreResiliente } = require("../../lib/blobs");
 
 exports.handler = async (event) => {
   const headers = {
@@ -32,7 +32,7 @@ exports.handler = async (event) => {
   try {
     const cpfBruto = event.queryStringParameters?.cpf || "";
     const cpf = cpfBruto.replace(/\D/g, "");
-    const store = getStore("consentimentos-pinauna");
+    const store = await getStoreResiliente("consentimentos-pinauna");
 
     const { blobs } = await store.list(cpf ? { prefix: `${cpf}__` } : {});
     const registros = await Promise.all(

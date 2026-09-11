@@ -4,7 +4,7 @@
  * Calcula a colocação geral e por categoria a partir da ordem real de chegada.
  */
 
-const { getStore } = require("@netlify/blobs");
+const { getStoreResiliente } = require("../../lib/blobs");
 
 exports.handler = async (event) => {
   const headers = {
@@ -22,7 +22,7 @@ exports.handler = async (event) => {
   }
 
   try {
-    const store = getStore("evento-4ed-chegadas");
+    const store = await getStoreResiliente("evento-4ed-chegadas");
     const { blobs } = await store.list({ prefix: `${prova}__` });
     const chegadas = await Promise.all(blobs.map(async (b) => await store.get(b.key, { type: "json" })));
     chegadas.sort((a, b) => new Date(a.chegada_em) - new Date(b.chegada_em));

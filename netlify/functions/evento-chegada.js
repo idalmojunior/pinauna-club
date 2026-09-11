@@ -7,14 +7,14 @@
  * Protegida por header x-admin-key
  */
 
-const { getStore } = require("@netlify/blobs");
+const { getStoreResiliente } = require("../../lib/blobs");
 const { checarAdmin } = require("../../lib/asaas");
 
 function storeChegadas() {
-  return getStore("evento-4ed-chegadas");
+  return getStoreResiliente("evento-4ed-chegadas");
 }
 function storeInscricoes() {
-  return getStore("evento-4ed-inscricoes");
+  return getStoreResiliente("evento-4ed-inscricoes");
 }
 
 exports.handler = async (event) => {
@@ -32,7 +32,7 @@ exports.handler = async (event) => {
     return { statusCode: 401, headers, body: JSON.stringify({ erro: "Não autorizado" }) };
   }
 
-  const sc = storeChegadas();
+  const sc = await storeChegadas();
 
   try {
     if (event.httpMethod === "GET") {
@@ -61,7 +61,7 @@ exports.handler = async (event) => {
       }
 
       // Confirma que o atleta está inscrito nessa prova antes de registrar a chegada
-      const inscrito = await storeInscricoes().get(cpfLimpo, { type: "json" });
+      const inscrito = await (await storeInscricoes()).get(cpfLimpo, { type: "json" });
       if (!inscrito || inscrito.prova !== prova) {
         return { statusCode: 404, headers, body: JSON.stringify({ erro: "Atleta não inscrito nessa prova" }) };
       }

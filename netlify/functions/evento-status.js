@@ -6,11 +6,11 @@
  * Protegida por header x-admin-key (mesma ADMIN_API_KEY do painel de consentimentos)
  */
 
-const { getStore } = require("@netlify/blobs");
+const { getStoreResiliente } = require("../../lib/blobs");
 const { asaasFetch, checarAdmin } = require("../../lib/asaas");
 
 function store() {
-  return getStore("evento-4ed-inscricoes");
+  return getStoreResiliente("evento-4ed-inscricoes");
 }
 
 const STATUS_PAGOS = ["RECEIVED", "CONFIRMED", "RECEIVED_IN_CASH"];
@@ -31,7 +31,7 @@ exports.handler = async (event) => {
 
   try {
     const qs = event.queryStringParameters || {};
-    const s = store();
+    const s = await store();
     const { blobs } = await s.list();
     let inscritos = await Promise.all(blobs.map(async (b) => await s.get(b.key, { type: "json" })));
 

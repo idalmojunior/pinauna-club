@@ -8,7 +8,7 @@
  * própria (evento_pinauna-4ed-2026_<cpf>) fácil de filtrar/buscar.
  */
 
-const { getStore } = require("@netlify/blobs");
+const { getStoreResiliente } = require("../../lib/blobs");
 const { asaasFetch, upsertCliente, getClientIp } = require("../../lib/asaas");
 
 const EVENTO_ID = "pinauna-4ed-2026";
@@ -33,7 +33,7 @@ const TAMANHOS_VALIDOS = ["P", "M", "G", "GG"];
 const TERMO_VERSAO_EVENTO = "pinauna-evento-4ed-termo-v1-2026-09-11";
 
 function store() {
-  return getStore("evento-4ed-inscricoes");
+  return getStoreResiliente("evento-4ed-inscricoes");
 }
 
 exports.handler = async (event) => {
@@ -80,7 +80,7 @@ exports.handler = async (event) => {
     }
 
     // Já inscrito? Não gera cobrança duplicada — devolve o link já emitido.
-    const existente = await store().get(cpfLimpo, { type: "json" });
+    const existente = await (await store()).get(cpfLimpo, { type: "json" });
     if (existente && existente.evento_id === EVENTO_ID) {
       return {
         statusCode: 200,
@@ -139,7 +139,7 @@ exports.handler = async (event) => {
       inscrito_em: hoje.toISOString(),
     };
 
-    await store().setJSON(cpfLimpo, registro);
+    await (await store()).setJSON(cpfLimpo, registro);
 
     return {
       statusCode: 200,

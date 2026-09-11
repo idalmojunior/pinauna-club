@@ -12,7 +12,7 @@
  * 7. Retorna link de pagamento para o aluno
  */
 
-const { getStore } = require("@netlify/blobs");
+const { getStoreResiliente } = require("../../lib/blobs");
 
 const ASAAS_BASE = "https://api.asaas.com/v3"; // Produção — cobranças reais (endereço novo, sem "/api" no caminho)
 
@@ -163,7 +163,7 @@ function getClientIp(event) {
  */
 async function registrarConsentimento(registro) {
   try {
-    const store = getStore("consentimentos-pinauna");
+    const store = await getStoreResiliente("consentimentos-pinauna");
     const chave = `${registro.cpf}__${Date.now()}`;
     await store.setJSON(chave, registro);
     return chave;
