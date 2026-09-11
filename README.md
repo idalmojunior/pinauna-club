@@ -146,6 +146,19 @@ Sem informar `cpf`, a chamada retorna todos os registros já gravados. Guarde a 
 
 ---
 
+## Cobrança por WhatsApp
+
+Todo aluno que se matricula pelo site já sai com o WhatsApp ligado como canal de cobrança no Asaas, automaticamente (sem precisar mexer em nada no painel):
+
+- **Aviso antes do vencimento:** 5 dias antes da cobrança vencer
+- **Lembrete de cobrança vencida:** a cada 7 dias enquanto não for paga, até 3 mensagens (comportamento padrão do Asaas para esse evento)
+
+Isso é feito pela função `matricula.js` logo depois de criar o cliente no Asaas (`GET /customers/{id}/notifications` + `PUT /notifications/{id}`), sem desligar e-mail/SMS — só acrescenta o WhatsApp. Se a chamada falhar por qualquer motivo, a matrícula segue normalmente (best-effort).
+
+⚠️ Cada notificação por WhatsApp é cobrada pelo Asaas (consulte o valor vigente em Configurações → Taxas na sua conta) — no pior caso (aluno que nunca paga), são até 4 mensagens por cobrança.
+
+---
+
 ## Programa Indique & Ganhe
 
 - **Quem pode indicar:** apenas alunos com plano semestral ou anual

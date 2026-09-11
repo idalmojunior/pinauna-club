@@ -186,6 +186,31 @@ async function anotarConsentimentoNoAsaas(customerId, nota) {
   }
 }
 
+/**
+ * Liga o WhatsApp como canal de cobrança, por padrão, para todo aluno que se matricula:
+ *  - PAYMENT_DUEDATE_WARNING (aviso antes do vencimento) → 5 dias antes
+ *  - PAYMENT_OVERDUE (cobrança vencida) → lembrete recorrente do próprio Asaas (a cada
+ *    7 dias, até 3 notificações — comportamento padrão desse evento)
+ * Mantém os demais canais (e-mail/SMS) como já vinham configurados; só acrescenta o WhatsApp.
+ * Best-effort: não bloqueia a matrícula se o Asaas recusar ou a chamada falhar.
+ */
+async function ativarNotificacoesWhatsapp(customerId) {
+  try {
+    const resposta = await asaasFetch(`/customers/${customerId}/notifications`);
+    const notificacoes = Array.isArray(resposta) ? resposta : resposta?.data || [];
+
+    for (const n of notificacoes) {
+      if (n.event === "PAYMENT_DUEDATE_WARNING" || n.event === "PAYMENT_OVERDUE") {
+        const payload = { enabled: true, whatsappEnabledForCustomer: true };
+        if (n.event === "PAYMENT_DUEDATE_WARNING") payload.scheduleOffset = 5;
+        await asaasFetch(`/notifications/${n.id}`, "PUT", payload);
+      }
+    }
+  } catch (err) {
+    console.error("Falha ao ativar notificações por WhatsApp:", err.message);
+  }
+}
+
 // ── Handler principal ──────────────────────────────────────────────────────
 
 exports.handler = async (event) => {
@@ -227,6 +252,9 @@ exports.handler = async (event) => {
 
     // 1. Criar/buscar cliente
     const cliente = await upsertCliente({ nome, email, cpfCnpj: cpf, fone });
+
+    // 1b. Ligar WhatsApp como canal padrão de cobrança (best-effort, não bloqueia a matrícula)
+    await ativarNotificacoesWhatsapp(cliente.id);
 
     // 2. Data de início = hoje
     const hoje = new Date();
