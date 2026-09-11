@@ -14,7 +14,7 @@
 
 const { getStore } = require("@netlify/blobs");
 
-const ASAAS_BASE = "https://api.asaas.com/api/v3"; // Produção — cobranças reais
+const ASAAS_BASE = "https://api.asaas.com/v3"; // Produção — cobranças reais (endereço novo, sem "/api" no caminho)
 
 // Mapeamento de planos: id → { nome, valor_mensal, ciclo, meses, desconto_pct }
 const PLANOS = {

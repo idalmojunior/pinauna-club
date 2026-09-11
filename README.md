@@ -79,7 +79,7 @@ Essa é a parte mais importante — a chave do Asaas **nunca deve ficar no códi
 
 ## Passo 4 — Ambiente do Asaas (produção x sandbox)
 
-O código já está apontando para a API de **produção** (`https://api.asaas.com/api/v3`), então cobranças geradas são reais. A `ASAAS_API_KEY` configurada no Netlify precisa ser uma chave de **produção** (painel em https://www.asaas.com, não o sandbox) — se colar uma chave sandbox aqui, o Asaas recusa com o erro "chave não pertence a este ambiente".
+O código já está apontando para a API de **produção** (`https://api.asaas.com/v3`), então cobranças geradas são reais. A `ASAAS_API_KEY` configurada no Netlify precisa ser uma chave de **produção** (painel em https://www.asaas.com, não o sandbox) — se colar uma chave sandbox aqui, o Asaas recusa com o erro "chave não pertence a este ambiente".
 
 Se quiser voltar a testar sem gerar cobranças reais:
 
