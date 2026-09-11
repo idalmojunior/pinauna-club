@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Controle de chegada — Pinaúna 4ª Edição</title>
+<style>
+  :root{ --laranja:#ff5e1a; --roxo:#5b2a9e; --tinta:#1b0f2e; --verde:#1fae57; --amarelo:#d7ea3c; }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Segoe UI',Arial,sans-serif;background:var(--tinta);color:#fff;min-height:100vh;}
+  .wrap{max-width:720px;margin:0 auto;padding:20px 16px 60px;}
+  h1{font-size:1.3rem;margin:0 0 4px;}
+  .sub{opacity:.7;font-size:.85rem;margin-bottom:20px;}
+
+  #tela-senha{max-width:340px;margin:80px auto;text-align:center;}
+  #tela-senha input{width:100%;padding:14px;border-radius:10px;border:none;font-size:1rem;margin:14px 0;}
+  #tela-senha button{width:100%;padding:14px;border:none;border-radius:10px;background:var(--laranja);color:#fff;font-weight:800;font-size:1rem;cursor:pointer;}
+  #tela-senha .erro{color:#ff8080;font-size:.85rem;min-height:20px;}
+
+  #painel{display:none;}
+  .barra{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+  select, button.acao{
+    padding:10px 14px;border-radius:10px;border:none;font-size:.9rem;font-weight:600;cursor:pointer;
+  }
+  select{background:#fff;color:#222;flex:1;min-width:140px;}
+  button.acao{background:rgba(255,255,255,.15);color:#fff;}
+  button.acao:hover{background:rgba(255,255,255,.25);}
+
+  .colunas{display:grid;grid-template-columns:1fr;gap:18px;}
+  @media(min-width:640px){.colunas{grid-template-columns:1fr 1fr;}}
+
+  .painel-card{background:rgba(255,255,255,.06);border-radius:16px;padding:16px;}
+  .painel-card h2{margin:0 0 10px;font-size:1rem;text-transform:uppercase;letter-spacing:.5px;opacity:.85;}
+
+  .atleta{
+    display:flex;justify-content:space-between;align-items:center;gap:10px;
+    background:rgba(255,255,255,.9);color:#222;border-radius:10px;padding:12px 14px;margin-bottom:8px;
+    cursor:pointer;font-weight:600;
+  }
+  .atleta small{display:block;font-weight:400;opacity:.7;font-size:.75rem;}
+  .atleta:active{transform:scale(.98);}
+
+  .chegada{
+    display:flex;justify-content:space-between;align-items:center;gap:10px;
+    background:rgba(31,174,87,.18);border:1px solid rgba(31,174,87,.4);border-radius:10px;padding:10px 14px;margin-bottom:8px;
+  }
+  .chegada .pos{font-weight:800;color:var(--amarelo);min-width:28px;}
+  .chegada .nome{flex:1;font-size:.92rem;}
+  .chegada button{background:none;border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:8px;padding:4px 10px;font-size:.75rem;cursor:pointer;}
+
+  .vazio{opacity:.6;font-size:.85rem;padding:10px 0;}
+  .toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--verde);color:#fff;
+    padding:10px 18px;border-radius:30px;font-weight:600;font-size:.85rem;display:none;
+  }
+</style>
+</head>
+<body>
+
+<div id="tela-senha">
+  <h1>Controle de chegada</h1>
+  <p class="sub">Pinaúna Club — 4ª Edição</p>
+  <input type="password" id="senha" placeholder="Senha de acesso">
+  <div class="erro" id="senha-erro"></div>
+  <button onclick="entrar()">Entrar</button>
+</div>
+
+<div class="wrap" id="painel">
+  <h1>Controle de chegada</h1>
+  <p class="sub">Toque no nome do atleta assim que ele chegar. A ordem dos toques vira a posição.</p>
+
+  <div class="barra">
+    <select id="prova" onchange="carregarTudo()">
+      <option value="2KM">2km</option>
+      <option value="500M">500 metros</option>
+      <option value="200M">200 metros</option>
+      <option value="AQUATHLON">Aquathlon</option>
+    </select>
+    <button class="acao" onclick="atualizarPagamentos()">↻ Atualizar pagamentos</button>
+    <button class="acao" onclick="carregarTudo()">↻ Atualizar tela</button>
+  </div>
+
+  <div class="colunas">
+    <div class="painel-card">
+      <h2>Aguardando chegada</h2>
+      <div id="lista-aguardando"><p class="vazio">Carregando...</p></div>
+    </div>
+    <div class="painel-card">
+      <h2>Ordem de chegada</h2>
+      <div id="lista-chegadas"><p class="vazio">Ninguém chegou ainda.</p></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let ADMIN_KEY = "";
+
+function entrar(){
+  const v = document.getElementById('senha').value.trim();
+  if (!v) return;
+  ADMIN_KEY = v;
+  sessionStorage.setItem('pinauna_admin_key', v);
+  testarChave();
+}
+
+async function testarChave(){
+  const resp = await fetch('/api/evento-status', { headers: { 'x-admin-key': ADMIN_KEY } });
+  if (resp.status === 401) {
+    document.getElementById('senha-erro').textContent = "Senha incorreta.";
+    return;
+  }
+  document.getElementById('tela-senha').style.display = 'none';
+  document.getElementById('painel').style.display = 'block';
+  carregarTudo();
+}
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(() => { t.style.display = 'none'; }, 1800);
+}
+
+async function atualizarPagamentos(){
+  toast("Conferindo pagamentos no Asaas...");
+  await carregarInscritos(true);
+  await carregarChegadas();
+}
+
+async function carregarTudo(){
+  await Promise.all([carregarInscritos(false), carregarChegadas()]);
+}
+
+let inscritosAtuais = [];
+let chegadasAtuais = [];
+
+async function carregarInscritos(sync){
+  const prova = document.getElementById('prova').value;
+  const url = `/api/evento-status?prova=${encodeURIComponent(prova)}${sync ? '&sync=true' : ''}`;
+  const resp = await fetch(url, { headers: { 'x-admin-key': ADMIN_KEY } });
+  const json = await resp.json();
+  if (!resp.ok) { toast(json.erro || "Erro ao carregar inscritos"); return; }
+  inscritosAtuais = (json.inscritos || []).filter(i => i.status_pagamento === 'CONFIRMED');
+  renderizarAguardando();
+}
+
+async function carregarChegadas(){
+  const prova = document.getElementById('prova').value;
+  const resp = await fetch(`/api/evento-chegada?prova=${encodeURIComponent(prova)}`, { headers: { 'x-admin-key': ADMIN_KEY } });
+  const json = await resp.json();
+  if (!resp.ok) { toast(json.erro || "Erro ao carregar chegadas"); return; }
+  chegadasAtuais = json.chegadas || [];
+  renderizarChegadas();
+  renderizarAguardando();
+}
+
+function renderizarAguardando(){
+  const chegaramCpfs = new Set(chegadasAtuais.map(c => c.cpf));
+  const pendentes = inscritosAtuais.filter(i => !chegaramCpfs.has(i.cpf));
+  const el = document.getElementById('lista-aguardando');
+  if (!pendentes.length) { el.innerHTML = '<p class="vazio">Nenhum atleta pago aguardando (ou todos já chegaram).</p>'; return; }
+  el.innerHTML = pendentes.map(i => `
+    <div class="atleta" onclick="registrarChegada('${i.cpf}')">
+      ${i.nome}
+      <small>${i.categoria}</small>
+    </div>
+  `).join('');
+}
+
+function renderizarChegadas(){
+  const el = document.getElementById('lista-chegadas');
+  if (!chegadasAtuais.length) { el.innerHTML = '<p class="vazio">Ninguém chegou ainda.</p>'; return; }
+  el.innerHTML = chegadasAtuais.map((c, i) => `
+    <div class="chegada">
+      <span class="pos">${i + 1}º</span>
+      <span class="nome">${c.nome}<br><small style="opacity:.7">${c.categoria}</small></span>
+      <button onclick="desfazerChegada('${c.cpf}')">Desfazer</button>
+    </div>
+  `).join('');
+}
+
+async function registrarChegada(cpf){
+  const prova = document.getElementById('prova').value;
+  const resp = await fetch('/api/evento-chegada', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
+    body: JSON.stringify({ cpf, prova }),
+  });
+  const json = await resp.json();
+  if (!resp.ok) { toast(json.erro || "Erro ao registrar chegada"); return; }
+  toast("Chegada registrada!");
+  await carregarChegadas();
+}
+
+async function desfazerChegada(cpf){
+  const prova = document.getElementById('prova').value;
+  if (!confirm("Desfazer essa chegada?")) return;
+  const resp = await fetch('/api/evento-chegada', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
+    body: JSON.stringify({ cpf, prova, desfazer: true }),
+  });
+  const json = await resp.json();
+  if (!resp.ok) { toast(json.erro || "Erro ao desfazer"); return; }
+  toast("Desfeito.");
+  await carregarChegadas();
+}
+
+// Auto-refresh das chegadas a cada 6s (útil quando mais de um dispositivo opera a mesma prova)
+setInterval(() => {
+  if (document.getElementById('painel').style.display === 'block') carregarChegadas();
+}, 6000);
+
+// Reaproveita a senha já digitada nessa sessão do navegador
+window.addEventListener('DOMContentLoaded', () => {
+  const salva = sessionStorage.getItem('pinauna_admin_key');
+  if (salva) {
+    ADMIN_KEY = salva;
+    document.getElementById('senha').value = salva;
+    testarChave();
+  }
+});
+</script>
+</body>
+</html>

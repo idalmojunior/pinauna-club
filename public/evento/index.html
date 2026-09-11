@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pinaúna Club — 4ª Edição | Troféu Ana Serra</title>
+<meta name="description" content="Inscrição para a 4ª edição do Pinaúna Club — Troféu Ana Serra. Provas de 2km, 500m, 200m e Aquathlon. 01 de novembro de 2026.">
+<style>
+  :root{
+    --laranja:#ff5e1a;
+    --roxo:#5b2a9e;
+    --rosa:#b0299e;
+    --amarelo:#d7ea3c;
+    --tinta:#1b0f2e;
+    --branco:#ffffff;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(160deg, var(--laranja) 0%, var(--rosa) 55%, var(--roxo) 100%);
+    color:var(--branco);
+    min-height:100vh;
+  }
+  .wrap{max-width:640px;margin:0 auto;padding:0 0 60px;}
+  .capa{width:100%;display:block;}
+  .conteudo{padding:0 20px;}
+  h1{font-size:1.8rem;margin:24px 0 4px;text-transform:uppercase;letter-spacing:1px;}
+  .subtitulo{opacity:.9;margin:0 0 20px;font-size:.95rem;}
+  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;}
+  .info-card{background:rgba(255,255,255,.12);border-radius:14px;padding:14px 16px;backdrop-filter:blur(4px);}
+  .info-card b{display:block;font-size:1.05rem;}
+  .info-card span{font-size:.78rem;opacity:.85;text-transform:uppercase;letter-spacing:.5px;}
+  .btn-inscrever{
+    display:block;width:100%;text-align:center;padding:16px;border:none;border-radius:14px;
+    background:var(--amarelo);color:var(--tinta);font-weight:800;font-size:1.05rem;cursor:pointer;
+    text-transform:uppercase;letter-spacing:.5px;margin:8px 0 32px;
+  }
+  .cartao{background:rgba(0,0,0,.28);border-radius:20px;padding:22px;margin-bottom:20px;}
+  .cartao h2{margin-top:0;font-size:1.15rem;}
+  label{display:block;font-size:.85rem;margin:14px 0 6px;font-weight:600;}
+  input, select{
+    width:100%;padding:12px 14px;border-radius:10px;border:none;font-size:1rem;
+    background:rgba(255,255,255,.95);color:#222;
+  }
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .termo-box{
+    background:rgba(255,255,255,.9);color:#222;border-radius:10px;padding:14px;
+    max-height:180px;overflow-y:auto;font-size:.82rem;line-height:1.5;margin-top:16px;
+  }
+  .termo-box p{margin:0 0 10px;}
+  .aceite{display:flex;align-items:flex-start;gap:10px;margin-top:14px;font-size:.85rem;}
+  .aceite input{width:auto;margin-top:3px;}
+  .erro{
+    background:#ffe1e1;color:#8a1f1f;border-radius:10px;padding:10px 14px;margin-top:14px;
+    font-size:.85rem;display:none;
+  }
+  .btn-enviar{
+    width:100%;padding:16px;border:none;border-radius:12px;background:var(--laranja);color:#fff;
+    font-weight:800;font-size:1rem;text-transform:uppercase;letter-spacing:.5px;margin-top:18px;cursor:pointer;
+  }
+  .btn-enviar:disabled{opacity:.6;}
+  .sucesso{display:none;text-align:center;padding:30px 10px;}
+  .sucesso h2{color:var(--amarelo);}
+  .link-pagamento{
+    display:inline-block;margin-top:16px;padding:14px 26px;background:var(--amarelo);color:var(--tinta);
+    font-weight:800;border-radius:12px;text-decoration:none;text-transform:uppercase;
+  }
+  footer{text-align:center;font-size:.75rem;opacity:.7;margin-top:30px;}
+  a.ranking-link{color:var(--amarelo);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <img src="capa.jpg" alt="Pinaúna Club — 4ª Edição — Troféu Ana Serra" class="capa">
+
+  <div class="conteudo">
+    <h1>Pinaúna Club — 4ª Edição</h1>
+    <p class="subtitulo">Troféu Ana Serra • Natação em águas abertas • Salvador (BA)</p>
+
+    <div class="info-grid">
+      <div class="info-card"><b>01/11/2026</b><span>Data</span></div>
+      <div class="info-card"><b>R$ 100,00</b><span>Inscrição</span></div>
+      <div class="info-card"><b>2km · 500m · 200m</b><span>Provas de natação</span></div>
+      <div class="info-card"><b>Aquathlon</b><span>Prova combinada</span></div>
+    </div>
+
+    <button class="btn-inscrever" onclick="document.getElementById('formulario').scrollIntoView({behavior:'smooth'})">Quero me inscrever</button>
+
+    <p style="text-align:center;font-size:.85rem;">
+      Acompanhe o ranking ao vivo no dia da prova em
+      <a class="ranking-link" href="../evento/ranking/">/evento/ranking</a>
+    </p>
+
+    <form class="cartao" id="formulario" onsubmit="enviarInscricao(event)">
+      <h2>Ficha de inscrição</h2>
+
+      <label for="f_nome">Nome completo *</label>
+      <input id="f_nome" required>
+
+      <div class="row2">
+        <div>
+          <label for="f_nascimento">Data de nascimento *</label>
+          <input id="f_nascimento" type="date" required>
+        </div>
+        <div>
+          <label for="f_rg">RG *</label>
+          <input id="f_rg" required>
+        </div>
+      </div>
+
+      <label for="f_cpf">CPF *</label>
+      <input id="f_cpf" required placeholder="000.000.000-00">
+
+      <label for="f_email">E-mail *</label>
+      <input id="f_email" type="email" required>
+
+      <label for="f_telefone">WhatsApp *</label>
+      <input id="f_telefone" required placeholder="(71) 90000-0000">
+
+      <label for="f_clube">Clube que deseja representar (opcional)</label>
+      <input id="f_clube" placeholder="Ex.: Pinaúna Club">
+
+      <div class="row2">
+        <div>
+          <label for="f_prova">Prova *</label>
+          <select id="f_prova" required>
+            <option value="">Selecione</option>
+            <option value="2KM">2km</option>
+            <option value="500M">500 metros</option>
+            <option value="200M">200 metros</option>
+            <option value="AQUATHLON">Aquathlon</option>
+          </select>
+        </div>
+        <div>
+          <label for="f_camisa">Tamanho de camisa *</label>
+          <select id="f_camisa" required>
+            <option value="">Selecione</option>
+            <option value="P">P</option>
+            <option value="M">M</option>
+            <option value="G">G</option>
+            <option value="GG">GG</option>
+          </select>
+        </div>
+      </div>
+
+      <label for="f_categoria">Categoria *</label>
+      <select id="f_categoria" required>
+        <option value="">Selecione</option>
+        <option value="LOMANTO">Categoria Lomanto</option>
+        <option value="MIRIM (9-10)">Mirim (9-10)</option>
+        <option value="PETIZ (11-12)">Petiz (11-12)</option>
+        <option value="INFANTIL (13-14)">Infantil (13-14)</option>
+        <option value="JUVENIL (15-16)">Juvenil (15-16)</option>
+        <option value="JUNIOR (17-19)">Junior (17-19)</option>
+        <option value="SENIOR (20-24)">Sênior (20-24)</option>
+        <option value="MASTER A-I (25+)">Master A-I (25+)</option>
+        <option value="PCD">Categoria PCD</option>
+      </select>
+
+      <div class="termo-box">
+        <p><b>1. Riscos inerentes.</b> A natação em águas abertas envolve riscos próprios do ambiente natural (correntes, ondulação, fauna marinha, visibilidade reduzida, variação de temperatura). Ao me inscrever, declaro estar ciente desses riscos e participar por livre e espontânea vontade.</p>
+        <p><b>2. Declaração de saúde.</b> Declaro estar em condições físicas compatíveis com a prova escolhida, sem doenças cardíacas, respiratórias, neurológicas ou outra condição que possa colocar em risco minha segurança durante a competição — ou, havendo, possuo liberação médica para praticar.</p>
+        <p><b>3. Isenção de responsabilidade.</b> Isento a organização do Pinaúna Club, seus organizadores e apoiadores de responsabilidade por acidentes decorrentes de condição de saúde não informada ou de força maior, mantida a responsabilidade da organização por falha comprovada na estrutura de segurança do evento.</p>
+        <p><b>4. Uso de imagem.</b> Autorizo o uso de fotos e vídeos capturados durante o evento para divulgação do Pinaúna Club, sem ônus.</p>
+      </div>
+      <div class="aceite">
+        <input type="checkbox" id="f_termo" required>
+        <label for="f_termo" style="margin:0;font-weight:400;">Li e concordo com o termo de responsabilidade e declaro estar em condições de saúde para competir.</label>
+      </div>
+
+      <div class="erro" id="f_erro"></div>
+
+      <button class="btn-enviar" id="f_btn" type="submit">Confirmar e ir para pagamento →</button>
+      <p style="font-size:.75rem;text-align:center;opacity:.8;margin-top:10px;">
+        Você será redirecionado para a página de pagamento segura do Asaas. Aceita Pix, cartão de crédito e boleto.
+      </p>
+    </form>
+
+    <div class="sucesso cartao" id="sucesso">
+      <h2 id="sucesso-titulo">Inscrição registrada!</h2>
+      <p id="sucesso-msg"></p>
+      <a class="link-pagamento" id="sucesso-link" href="#" target="_blank" rel="noopener">Ir para pagamento →</a>
+    </div>
+
+    <footer>Pinaúna Club — Natação em águas abertas — Salvador (BA)</footer>
+  </div>
+</div>
+
+<script>
+const API_INSCRICAO = "/api/evento-inscricao";
+
+function limparDigitos(v){ return (v || "").replace(/\D/g, ""); }
+
+async function enviarInscricao(ev){
+  ev.preventDefault();
+  const erroEl = document.getElementById('f_erro');
+  const btn = document.getElementById('f_btn');
+  erroEl.style.display = 'none';
+
+  const dados = {
+    nome: document.getElementById('f_nome').value.trim(),
+    data_nascimento: document.getElementById('f_nascimento').value,
+    email: document.getElementById('f_email').value.trim(),
+    cpf: limparDigitos(document.getElementById('f_cpf').value),
+    rg: document.getElementById('f_rg').value.trim(),
+    telefone: document.getElementById('f_telefone').value.trim(),
+    clube: document.getElementById('f_clube').value.trim(),
+    prova: document.getElementById('f_prova').value,
+    categoria: document.getElementById('f_categoria').value,
+    tamanho_camisa: document.getElementById('f_camisa').value,
+    termo_aceito: document.getElementById('f_termo').checked,
+    termo_aceito_em: new Date().toISOString(),
+  };
+
+  if (dados.cpf.length !== 11) {
+    erroEl.textContent = "Digite um CPF válido (11 números).";
+    erroEl.style.display = 'block';
+    return;
+  }
+  if (!dados.termo_aceito) {
+    erroEl.textContent = "É necessário aceitar o termo de responsabilidade.";
+    erroEl.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "Enviando...";
+
+  try {
+    const resp = await fetch(API_INSCRICAO, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dados),
+    });
+    const json = await resp.json();
+
+    if (!resp.ok || !json.ok) {
+      throw new Error(json.erro || "Não foi possível concluir a inscrição.");
+    }
+
+    document.getElementById('formulario').style.display = 'none';
+    document.getElementById('sucesso').style.display = 'block';
+    document.getElementById('sucesso-msg').textContent = json.mensagem || "";
+    const linkBtn = document.getElementById('sucesso-link');
+    if (json.link_pagamento) {
+      linkBtn.href = json.link_pagamento;
+      linkBtn.style.display = 'inline-block';
+    } else {
+      linkBtn.style.display = 'none';
+    }
+    document.getElementById('sucesso').scrollIntoView({behavior:'smooth'});
+  } catch (err) {
+    erroEl.textContent = err.message || "Erro ao enviar. Tente novamente.";
+    erroEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = "Confirmar e ir para pagamento →";
+  }
+}
+</script>
+</body>
+</html>

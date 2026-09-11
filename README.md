@@ -159,6 +159,31 @@ Isso é feito pela função `matricula.js` logo depois de criar o cliente no Asa
 
 ---
 
+## Evento — Pinaúna Club 4ª Edição (Troféu Ana Serra)
+
+Subpágina separada da matrícula mensal, para inscrição e controle da competição de 01/11/2026.
+
+### Páginas
+
+- **`/evento/`** — página pública com o poster, informações do evento e a ficha de inscrição (reproduz os campos do formulário original + CPF, que o Asaas exige e o formulário não pedia).
+- **`/evento/controle/`** — tela de controle de chegada, protegida pela mesma `ADMIN_API_KEY`. No dia da prova, escolha a prova (2km/500m/200m/Aquathlon) e toque no nome de cada atleta conforme ele chega na borda — a ordem dos toques vira a posição. Tem botão "Desfazer" pra corrigir toque errado.
+- **`/evento/ranking/`** — página pública com o ranking ao vivo, separado por categoria dentro de cada prova, atualizando sozinha a cada 5s (boa para projetar num telão).
+
+### Funções (Netlify)
+
+- `evento-inscricao.js` — recebe a ficha, cria/reaproveita o cliente no Asaas e gera uma **cobrança avulsa de R$100** (não uma assinatura — por isso não entra na régua nem nos relatórios das mensalidades). A referência da cobrança é `evento_pinauna-4ed-2026_<cpf>`, fácil de filtrar no painel do Asaas separado do resto.
+- `evento-status.js` (admin) — lista os inscritos; com `?sync=true` confere no Asaas se cada cobrança pendente já foi paga e atualiza o registro. É o que o botão "Atualizar pagamentos" da tela de controle chama.
+- `evento-chegada.js` (admin) — registra/desfaz a chegada de um atleta numa prova.
+- `evento-ranking.js` (pública) — calcula a colocação geral e por categoria a partir da ordem de chegada.
+
+Os dados do evento (inscrições e chegadas) ficam em dois Netlify Blobs stores próprios (`evento-4ed-inscricoes` e `evento-4ed-chegadas`), completamente separados dos dados de matrícula/mensalidade.
+
+⚠️ Como é um evento pontual, a confirmação de pagamento **não é automática via webhook** — é feita sob demanda pelo botão "Atualizar pagamentos" na tela de controle (evita ter que configurar um webhook na conta Asaas). Antes do dia da prova, vale clicar nesse botão pra atualizar quem já pagou.
+
+Nenhuma variável de ambiente nova é necessária — reaproveita `ASAAS_API_KEY` e `ADMIN_API_KEY` já configuradas.
+
+---
+
 ## Programa Indique & Ganhe
 
 - **Quem pode indicar:** apenas alunos com plano semestral ou anual
