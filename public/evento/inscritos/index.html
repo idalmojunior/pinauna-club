@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lista de inscritos — Pinaúna 4ª Edição</title>
+<style>
+  :root{ --laranja:#ff5e1a; --roxo:#5b2a9e; --tinta:#1b0f2e; --verde:#1fae57; --amarelo:#d7ea3c; --vermelho:#e05252; }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Segoe UI',Arial,sans-serif;background:var(--tinta);color:#fff;min-height:100vh;}
+  .wrap{max-width:1080px;margin:0 auto;padding:20px 16px 60px;}
+  h1{font-size:1.3rem;margin:0 0 4px;}
+  .sub{opacity:.7;font-size:.85rem;margin-bottom:20px;}
+  a.link-topo{color:var(--amarelo);text-decoration:none;font-size:.82rem;font-weight:600;}
+
+  #tela-senha{max-width:340px;margin:80px auto;text-align:center;}
+  #tela-senha input{width:100%;padding:14px;border-radius:10px;border:none;font-size:1rem;margin:14px 0;}
+  #tela-senha button{width:100%;padding:14px;border:none;border-radius:10px;background:var(--laranja);color:#fff;font-weight:800;font-size:1rem;cursor:pointer;}
+  #tela-senha .erro{color:#ff8080;font-size:.85rem;min-height:20px;}
+
+  #painel{display:none;}
+
+  .resumo{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px;}
+  @media(min-width:640px){.resumo{grid-template-columns:repeat(4,1fr);}}
+  .resumo-card{background:rgba(255,255,255,.06);border-radius:14px;padding:12px 14px;}
+  .resumo-card b{display:block;font-size:1.3rem;}
+  .resumo-card span{font-size:.72rem;opacity:.75;text-transform:uppercase;letter-spacing:.4px;}
+
+  .barra{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center;}
+  select, input[type="search"]{padding:10px 14px;border-radius:10px;border:none;font-size:.9rem;background:#fff;color:#222;}
+  input[type="search"]{flex:1;min-width:160px;}
+  button.acao{padding:10px 14px;border-radius:10px;border:none;font-size:.9rem;font-weight:600;cursor:pointer;background:rgba(255,255,255,.15);color:#fff;}
+  button.acao:hover{background:rgba(255,255,255,.25);}
+  button.acao.destaque{background:var(--amarelo);color:var(--tinta);}
+
+  .tabela-wrap{overflow-x:auto;background:rgba(255,255,255,.06);border-radius:16px;padding:4px;}
+  table{width:100%;border-collapse:collapse;font-size:.85rem;min-width:820px;}
+  th, td{text-align:left;padding:10px 12px;white-space:nowrap;}
+  th{opacity:.7;font-size:.72rem;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid rgba(255,255,255,.15);}
+  tbody tr{border-bottom:1px solid rgba(255,255,255,.06);}
+  tbody tr:hover{background:rgba(255,255,255,.05);}
+  .tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700;text-transform:uppercase;}
+  .tag.pago{background:rgba(31,174,87,.25);color:#5ee79b;}
+  .tag.pendente{background:rgba(215,234,60,.2);color:var(--amarelo);}
+  .tag.outro{background:rgba(224,82,82,.2);color:#ff9d9d;}
+  .fone-link{color:var(--amarelo);text-decoration:none;}
+
+  .vazio{opacity:.6;font-size:.85rem;padding:20px 4px;}
+  .toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--verde);color:#fff;
+    padding:10px 18px;border-radius:30px;font-weight:600;font-size:.85rem;display:none;
+  }
+</style>
+</head>
+<body>
+
+<div id="tela-senha">
+  <h1>Lista de inscritos</h1>
+  <p class="sub">Pinaúna Club — 4ª Edição</p>
+  <input type="password" id="senha" placeholder="Senha de acesso">
+  <div class="erro" id="senha-erro"></div>
+  <button onclick="entrar()">Entrar</button>
+</div>
+
+<div class="wrap" id="painel">
+  <h1>Lista de inscritos</h1>
+  <p class="sub">
+    Todos os inscritos do evento, com status de pagamento.
+    <a class="link-topo" href="/evento/controle/">→ Ir para controle de chegada</a>
+  </p>
+
+  <div class="resumo">
+    <div class="resumo-card"><b id="r-total">–</b><span>Inscritos</span></div>
+    <div class="resumo-card"><b id="r-pagos">–</b><span>Pagos</span></div>
+    <div class="resumo-card"><b id="r-pendentes">–</b><span>Pendentes</span></div>
+    <div class="resumo-card"><b id="r-arrecadado">–</b><span>Arrecadado</span></div>
+  </div>
+
+  <div class="barra">
+    <select id="f-prova" onchange="renderizar()">
+      <option value="">Todas as provas</option>
+      <option value="2KM">2km</option>
+      <option value="500M">500 metros</option>
+      <option value="200M">200 metros</option>
+      <option value="AQUATHLON">Aquathlon</option>
+    </select>
+    <select id="f-status" onchange="renderizar()">
+      <option value="">Todos os status</option>
+      <option value="pago">Pago</option>
+      <option value="pendente">Pendente</option>
+      <option value="outro">Outro (vencido/estornado)</option>
+    </select>
+    <input type="search" id="f-busca" placeholder="Buscar por nome ou CPF..." oninput="renderizar()">
+    <button class="acao" onclick="atualizarPagamentos()">↻ Atualizar pagamentos</button>
+    <button class="acao" onclick="carregar(false)">↻ Atualizar tela</button>
+    <button class="acao destaque" onclick="exportarCsv()">⭳ Exportar CSV</button>
+  </div>
+
+  <div class="tabela-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Categoria</th>
+          <th>Prova</th>
+          <th>Camisa</th>
+          <th>Telefone</th>
+          <th>Status</th>
+          <th>Inscrito em</th>
+        </tr>
+      </thead>
+      <tbody id="corpo-tabela">
+        <tr><td colspan="7"><p class="vazio">Carregando...</p></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let ADMIN_KEY = "";
+let inscritosAtuais = [];
+
+const NOMES_PROVA = { "2KM":"2km", "500M":"500m", "200M":"200m", "AQUATHLON":"Aquathlon" };
+const VALOR_INSCRICAO = 150;
+
+function entrar(){
+  const v = document.getElementById('senha').value.trim();
+  if (!v) return;
+  ADMIN_KEY = v;
+  sessionStorage.setItem('pinauna_admin_key', v);
+  testarChave();
+}
+
+async function testarChave(){
+  const resp = await fetch('/api/evento-status', { headers: { 'x-admin-key': ADMIN_KEY } });
+  if (resp.status === 401) {
+    document.getElementById('senha-erro').textContent = "Senha incorreta.";
+    return;
+  }
+  document.getElementById('tela-senha').style.display = 'none';
+  document.getElementById('painel').style.display = 'block';
+  carregar(false);
+}
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(() => { t.style.display = 'none'; }, 1800);
+}
+
+function classificarStatus(status){
+  if (status === 'CONFIRMED') return 'pago';
+  if (status === 'PENDING') return 'pendente';
+  return 'outro';
+}
+
+async function carregar(sync){
+  const corpo = document.getElementById('corpo-tabela');
+  try {
+    const url = `/api/evento-status${sync ? '?sync=true' : ''}`;
+    const resp = await fetch(url, { headers: { 'x-admin-key': ADMIN_KEY } });
+    const json = await resp.json();
+    if (!resp.ok) {
+      toast(json.erro || "Erro ao carregar inscritos");
+      corpo.innerHTML = `<tr><td colspan="7"><p class="vazio">Erro ao carregar: ${json.erro || 'tente de novo'}.</p></td></tr>`;
+      return;
+    }
+    inscritosAtuais = json.inscritos || [];
+    renderizar();
+  } catch (err) {
+    toast("Falha de conexão");
+    corpo.innerHTML = '<tr><td colspan="7"><p class="vazio">Falha de conexão. Toque em "Atualizar tela" pra tentar de novo.</p></td></tr>';
+  }
+}
+
+async function atualizarPagamentos(){
+  toast("Conferindo pagamentos no Asaas...");
+  await carregar(true);
+}
+
+function listaFiltrada(){
+  const prova = document.getElementById('f-prova').value;
+  const status = document.getElementById('f-status').value;
+  const busca = document.getElementById('f-busca').value.trim().toLowerCase();
+
+  return inscritosAtuais.filter(i => {
+    if (prova && i.prova !== prova) return false;
+    if (status && classificarStatus(i.status_pagamento) !== status) return false;
+    if (busca) {
+      const alvo = `${i.nome || ''} ${i.cpf || ''}`.toLowerCase();
+      if (!alvo.includes(busca)) return false;
+    }
+    return true;
+  });
+}
+
+function formatarData(iso){
+  if (!iso) return '–';
+  try {
+    return new Date(iso).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit' });
+  } catch { return '–'; }
+}
+
+function formatarFone(fone){
+  const limpo = (fone || '').replace(/\D/g, '');
+  if (!limpo) return '–';
+  return limpo;
+}
+
+function renderizar(){
+  const lista = listaFiltrada();
+  const corpo = document.getElementById('corpo-tabela');
+
+  const total = inscritosAtuais.length;
+  const pagos = inscritosAtuais.filter(i => classificarStatus(i.status_pagamento) === 'pago').length;
+  const pendentes = inscritosAtuais.filter(i => classificarStatus(i.status_pagamento) === 'pendente').length;
+  document.getElementById('r-total').textContent = total;
+  document.getElementById('r-pagos').textContent = pagos;
+  document.getElementById('r-pendentes').textContent = pendentes;
+  document.getElementById('r-arrecadado').textContent =
+    (pagos * VALOR_INSCRICAO).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+
+  if (!lista.length) {
+    corpo.innerHTML = '<tr><td colspan="7"><p class="vazio">Nenhum inscrito encontrado com esse filtro.</p></td></tr>';
+    return;
+  }
+
+  corpo.innerHTML = lista.map(i => {
+    const cls = classificarStatus(i.status_pagamento);
+    const rotulo = cls === 'pago' ? 'Pago' : (cls === 'pendente' ? 'Pendente' : i.status_pagamento || '–');
+    const foneNumeros = formatarFone(i.telefone);
+    return `
+      <tr>
+        <td>${i.nome || ''}</td>
+        <td>${i.categoria || ''}</td>
+        <td>${NOMES_PROVA[i.prova] || i.prova || ''}</td>
+        <td>${i.tamanho_camisa || ''}</td>
+        <td>${foneNumeros !== '–' ? `<a class="fone-link" target="_blank" href="https://wa.me/55${foneNumeros}">${foneNumeros}</a>` : '–'}</td>
+        <td><span class="tag ${cls}">${rotulo}</span></td>
+        <td>${formatarData(i.inscrito_em)}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function exportarCsv(){
+  const lista = listaFiltrada();
+  if (!lista.length) { toast("Nada para exportar com esse filtro"); return; }
+
+  const colunas = ['nome','cpf','data_nascimento','email','telefone','clube','prova','categoria','tamanho_camisa','status_pagamento','inscrito_em'];
+  const linhas = [colunas.join(';')];
+  lista.forEach(i => {
+    linhas.push(colunas.map(c => `"${(i[c] ?? '').toString().replace(/"/g, '""')}"`).join(';'));
+  });
+  const csv = '﻿' + linhas.join('\r\n');
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `inscritos-pinauna-4ed-${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// Reaproveita a senha já digitada nessa sessão do navegador (mesma chave do painel de controle)
+window.addEventListener('DOMContentLoaded', () => {
+  const salva = sessionStorage.getItem('pinauna_admin_key');
+  if (salva) {
+    ADMIN_KEY = salva;
+    document.getElementById('senha').value = salva;
+    testarChave();
+  }
+});
+</script>
+</body>
+</html>

@@ -166,7 +166,8 @@ Subpágina separada da matrícula mensal, para inscrição e controle da competi
 ### Páginas
 
 - **`/evento/`** — página pública com o poster, informações do evento e a ficha de inscrição (reproduz os campos do formulário original + CPF, que o Asaas exige e o formulário não pedia).
-- **`/evento/controle/`** — tela de controle de chegada, protegida pela mesma `ADMIN_API_KEY`. No dia da prova, escolha a prova (2km/500m/200m/Aquathlon) e toque no nome de cada atleta conforme ele chega na borda — a ordem dos toques vira a posição. Tem botão "Desfazer" pra corrigir toque errado.
+- **`/evento/inscritos/`** — tela com a lista completa de inscritos, protegida pela mesma `ADMIN_API_KEY`. Mostra todos os inscritos (todas as provas) com nome, categoria, prova, camisa, telefone (com link direto pro WhatsApp), status de pagamento e data de inscrição. Tem resumo (total, pagos, pendentes, valor arrecadado), filtro por prova/status/busca, botão "Atualizar pagamentos" (confere no Asaas) e exportação em CSV.
+- **`/evento/controle/`** — tela de controle de chegada, protegida pela mesma `ADMIN_API_KEY`. No dia da prova, escolha a prova (2km/500m/200m/Aquathlon) e toque no nome de cada atleta conforme ele chega na borda — a ordem dos toques vira a posição. Tem botão "Desfazer" pra corrigir toque errado e link pra lista completa de inscritos.
 - **`/evento/ranking/`** — página pública com o ranking ao vivo, separado por categoria dentro de cada prova, atualizando sozinha a cada 5s (boa para projetar num telão).
 
 ### Funções (Netlify)
