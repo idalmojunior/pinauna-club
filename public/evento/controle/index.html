@@ -184,7 +184,7 @@ function renderizarAguardando(){
   if (!pendentes.length) { el.innerHTML = '<p class="vazio">Nenhum atleta pago aguardando (ou todos já chegaram).</p>'; return; }
   el.innerHTML = pendentes.map(i => `
     <div class="atleta" onclick="registrarChegada('${i.cpf}')">
-      ${i.nome}
+      ${i.numero ? `<b style="color:var(--laranja)">${i.numero}</b> — ` : ''}${i.nome}
       <small>${i.categoria}</small>
     </div>
   `).join('');
@@ -196,7 +196,7 @@ function renderizarChegadas(){
   el.innerHTML = chegadasAtuais.map((c, i) => `
     <div class="chegada">
       <span class="pos">${i + 1}º</span>
-      <span class="nome">${c.nome}<br><small style="opacity:.7">${c.categoria}</small></span>
+      <span class="nome">${c.numero ? `<b>${c.numero}</b> — ` : ''}${c.nome}<br><small style="opacity:.7">${c.categoria}</small></span>
       <button onclick="desfazerChegada('${c.cpf}')">Desfazer</button>
     </div>
   `).join('');

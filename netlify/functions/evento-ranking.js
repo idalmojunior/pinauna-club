@@ -39,6 +39,7 @@ exports.handler = async (event) => {
         posicao_categoria: i + 1,
         posicao_geral: c.posicao_geral,
         nome: c.nome,
+        numero: c.numero || null,
         chegada_em: c.chegada_em,
       }));
     }

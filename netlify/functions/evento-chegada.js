@@ -74,6 +74,7 @@ exports.handler = async (event) => {
       const registro = {
         cpf: cpfLimpo,
         nome: inscrito.nome,
+        numero: inscrito.numero || null,
         categoria: inscrito.categoria,
         prova,
         chegada_em: new Date().toISOString(),

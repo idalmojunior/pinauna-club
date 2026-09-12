@@ -173,13 +173,16 @@ Subpágina separada da matrícula mensal, para inscrição e controle da competi
 ### Funções (Netlify)
 
 - `evento-inscricao.js` — recebe a ficha, cria/reaproveita o cliente no Asaas e gera uma **cobrança avulsa de R$150** (não uma assinatura — por isso não entra na régua nem nos relatórios das mensalidades). A referência da cobrança é `evento_pinauna-4ed-2026_<cpf>`, fácil de filtrar no painel do Asaas separado do resto.
-- `evento-status.js` (admin) — lista os inscritos; com `?sync=true` confere no Asaas se cada cobrança pendente já foi paga e atualiza o registro. É o que o botão "Atualizar pagamentos" da tela de controle chama.
+- `evento-status.js` (admin) — lista os inscritos; com `?sync=true` confere no Asaas se cada cobrança pendente já foi paga, atualiza o registro e **atribui o número do participante** assim que o pagamento é confirmado. É o que o botão "Atualizar pagamentos" chama (na lista de inscritos e no controle de chegada).
+- `evento-marcar-pago.js` (admin) — confirma manualmente quem pagou por fora do link (dinheiro/Pix direto ao professor). Usa o endpoint oficial do Asaas `receiveInCash` pra marcar a cobrança como recebida (sem gerar movimentação financeira real na conta nem continuar cobrando quem já pagou), atribui o número do participante e marca o registro com `pago_manualmente: true` — a lista de inscritos mostra um selo "recebido direto" nesses casos, pra diferenciar de quem pagou pelo link. É o botão "Marcar pago" na lista de inscritos.
 - `evento-chegada.js` (admin) — registra/desfaz a chegada de um atleta numa prova.
 - `evento-ranking.js` (pública) — calcula a colocação geral e por categoria a partir da ordem de chegada.
 
-Os dados do evento (inscrições e chegadas) ficam em dois Netlify Blobs stores próprios (`evento-4ed-inscricoes` e `evento-4ed-chegadas`), completamente separados dos dados de matrícula/mensalidade.
+**Numeração dos participantes:** sequencial, única para o evento todo (não por categoria/prova), começando em 100. É atribuída automaticamente só no momento em que o pagamento é confirmado (por sync com o Asaas ou por confirmação manual) — quem nunca chega a pagar não consome número. O contador fica salvo num Netlify Blobs store próprio (`evento-4ed-contador`).
 
-⚠️ Como é um evento pontual, a confirmação de pagamento **não é automática via webhook** — é feita sob demanda pelo botão "Atualizar pagamentos" na tela de controle (evita ter que configurar um webhook na conta Asaas). Antes do dia da prova, vale clicar nesse botão pra atualizar quem já pagou.
+Os dados do evento (inscrições, chegadas e o contador de numeração) ficam em Netlify Blobs stores próprios (`evento-4ed-inscricoes`, `evento-4ed-chegadas`, `evento-4ed-contador`), completamente separados dos dados de matrícula/mensalidade.
+
+⚠️ Como é um evento pontual, a confirmação de pagamento **não é automática via webhook** — é feita sob demanda pelo botão "Atualizar pagamentos" (na lista de inscritos ou no controle de chegada), que evita ter que configurar um webhook na conta Asaas. Antes do dia da prova, vale clicar nesse botão pra atualizar quem já pagou e garantir que todo mundo confirmado já tenha número.
 
 Nenhuma variável de ambiente nova é necessária — reaproveita `ASAAS_API_KEY` e `ADMIN_API_KEY` já configuradas.
 

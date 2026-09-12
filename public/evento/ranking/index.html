@@ -91,7 +91,7 @@ async function carregar(){
             ${json.categorias[cat].map(r => `
               <tr>
                 <td class="pos ${medalha(r.posicao_categoria)}">${r.posicao_categoria}º</td>
-                <td>${r.nome}</td>
+                <td>${r.numero ? `<b>${r.numero}</b> — ` : ''}${r.nome}</td>
               </tr>
             `).join('')}
           </table>

@@ -43,7 +43,11 @@
   .tag.pago{background:rgba(31,174,87,.25);color:#5ee79b;}
   .tag.pendente{background:rgba(215,234,60,.2);color:var(--amarelo);}
   .tag.outro{background:rgba(224,82,82,.2);color:#ff9d9d;}
+  .tag-manual{opacity:.7;font-size:.68rem;display:block;margin-top:2px;}
   .fone-link{color:var(--amarelo);text-decoration:none;}
+  .numero{font-weight:800;color:var(--amarelo);}
+  .btn-marcar{padding:6px 10px;border-radius:8px;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:.75rem;font-weight:600;cursor:pointer;}
+  .btn-marcar:hover{background:rgba(255,255,255,.3);}
 
   .vazio{opacity:.6;font-size:.85rem;padding:20px 4px;}
   .toast{
@@ -65,8 +69,8 @@
 <div class="wrap" id="painel">
   <h1>Lista de inscritos</h1>
   <p class="sub">
-    Todos os inscritos do evento, com status de pagamento.
-    <a class="link-topo" href="/evento/controle/">→ Ir para controle de chegada</a>
+    Todos os inscritos do evento, com status de pagamento. O número do participante é atribuído automaticamente assim que o pagamento é confirmado (sequencial, a partir do 100).
+    <br><a class="link-topo" href="/evento/controle/">→ Ir para controle de chegada</a>
   </p>
 
   <div class="resumo">
@@ -100,6 +104,7 @@
     <table>
       <thead>
         <tr>
+          <th>Nº</th>
           <th>Nome</th>
           <th>Categoria</th>
           <th>Prova</th>
@@ -107,10 +112,11 @@
           <th>Telefone</th>
           <th>Status</th>
           <th>Inscrito em</th>
+          <th>Ação</th>
         </tr>
       </thead>
       <tbody id="corpo-tabela">
-        <tr><td colspan="7"><p class="vazio">Carregando...</p></td></tr>
+        <tr><td colspan="9"><p class="vazio">Carregando...</p></td></tr>
       </tbody>
     </table>
   </div>
@@ -165,7 +171,7 @@ async function carregar(sync){
     const json = await resp.json();
     if (!resp.ok) {
       toast(json.erro || "Erro ao carregar inscritos");
-      corpo.innerHTML = `<tr><td colspan="7"><p class="vazio">Erro ao carregar: ${json.erro || 'tente de novo'}.</p></td></tr>`;
+      corpo.innerHTML = `<tr><td colspan="9"><p class="vazio">Erro ao carregar: ${json.erro || 'tente de novo'}.</p></td></tr>`;
       return;
     }
     inscritosAtuais = json.inscritos || [];
@@ -224,7 +230,7 @@ function renderizar(){
     (pagos * VALOR_INSCRICAO).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
 
   if (!lista.length) {
-    corpo.innerHTML = '<tr><td colspan="7"><p class="vazio">Nenhum inscrito encontrado com esse filtro.</p></td></tr>';
+    corpo.innerHTML = '<tr><td colspan="9"><p class="vazio">Nenhum inscrito encontrado com esse filtro.</p></td></tr>';
     return;
   }
 
@@ -232,25 +238,50 @@ function renderizar(){
     const cls = classificarStatus(i.status_pagamento);
     const rotulo = cls === 'pago' ? 'Pago' : (cls === 'pendente' ? 'Pendente' : i.status_pagamento || '–');
     const foneNumeros = formatarFone(i.telefone);
+    const acao = cls === 'pago'
+      ? ''
+      : `<button class="btn-marcar" onclick="marcarPago('${i.cpf}')">Marcar pago</button>`;
     return `
       <tr>
+        <td class="numero">${i.numero || '–'}</td>
         <td>${i.nome || ''}</td>
         <td>${i.categoria || ''}</td>
         <td>${NOMES_PROVA[i.prova] || i.prova || ''}</td>
         <td>${i.tamanho_camisa || ''}</td>
         <td>${foneNumeros !== '–' ? `<a class="fone-link" target="_blank" href="https://wa.me/55${foneNumeros}">${foneNumeros}</a>` : '–'}</td>
-        <td><span class="tag ${cls}">${rotulo}</span></td>
+        <td>
+          <span class="tag ${cls}">${rotulo}</span>
+          ${i.pago_manualmente ? '<span class="tag-manual">recebido direto</span>' : ''}
+        </td>
         <td>${formatarData(i.inscrito_em)}</td>
+        <td>${acao}</td>
       </tr>
     `;
   }).join('');
+}
+
+async function marcarPago(cpf){
+  if (!confirm("Confirma que esse atleta já pagou (dinheiro/Pix direto, fora do link do Asaas)?\n\nIsso vai marcar a inscrição como paga e atribuir o número dele.")) return;
+  try {
+    const resp = await fetch('/api/evento-marcar-pago', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
+      body: JSON.stringify({ cpf }),
+    });
+    const json = await resp.json();
+    if (!resp.ok) { toast(json.erro || "Erro ao marcar pagamento"); return; }
+    toast(json.ja_confirmado ? "Já estava confirmado." : "Pagamento confirmado!");
+    await carregar(false);
+  } catch (err) {
+    toast("Falha de conexão ao marcar pagamento");
+  }
 }
 
 function exportarCsv(){
   const lista = listaFiltrada();
   if (!lista.length) { toast("Nada para exportar com esse filtro"); return; }
 
-  const colunas = ['nome','cpf','data_nascimento','email','telefone','clube','prova','categoria','tamanho_camisa','status_pagamento','inscrito_em'];
+  const colunas = ['numero','nome','cpf','data_nascimento','email','telefone','clube','prova','categoria','tamanho_camisa','status_pagamento','pago_manualmente','inscrito_em'];
   const linhas = [colunas.join(';')];
   lista.forEach(i => {
     linhas.push(colunas.map(c => `"${(i[c] ?? '').toString().replace(/"/g, '""')}"`).join(';'));

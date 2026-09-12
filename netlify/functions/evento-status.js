@@ -6,7 +6,7 @@
  * Protegida por header x-admin-key (mesma ADMIN_API_KEY do painel de consentimentos)
  */
 
-const { getStoreResiliente } = require("../../lib/blobs");
+const { getStoreResiliente, proximoNumeroEvento } = require("../../lib/blobs");
 const { asaasFetch, checarAdmin } = require("../../lib/asaas");
 
 function store() {
@@ -36,25 +36,36 @@ exports.handler = async (event) => {
     let inscritos = await Promise.all(blobs.map(async (b) => await s.get(b.key, { type: "json" })));
 
     if (qs.sync === "true") {
-      inscritos = await Promise.all(
-        inscritos.map(async (inscrito) => {
-          if (inscrito.status_pagamento === "CONFIRMED") return inscrito;
+      // Sequencial (não Promise.all) de propósito: a numeração dos participantes usa um
+      // contador compartilhado, e processar em paralelo poderia atribuir o mesmo número
+      // pra duas pessoas que confirmassem o pagamento na mesma sincronização.
+      const atualizados = [];
+      for (const inscrito of inscritos) {
+        let atual = inscrito;
+        if (atual.status_pagamento !== "CONFIRMED") {
           try {
-            const pagamento = await asaasFetch(`/payments/${inscrito.pagamento_id}`);
+            const pagamento = await asaasFetch(`/payments/${atual.pagamento_id}`);
             const pago = STATUS_PAGOS.includes(pagamento.status);
-            const atualizado = {
-              ...inscrito,
+            atual = {
+              ...atual,
               status_pagamento: pago ? "CONFIRMED" : pagamento.status,
               status_checado_em: new Date().toISOString(),
             };
-            await s.setJSON(inscrito.cpf, atualizado);
-            return atualizado;
           } catch (err) {
-            console.error(`Falha ao checar pagamento de ${inscrito.cpf}:`, err.message);
-            return inscrito;
+            console.error(`Falha ao checar pagamento de ${atual.cpf}:`, err.message);
           }
-        })
-      );
+        }
+        // Atribui o número do participante assim que o pagamento estiver confirmado
+        // (por sync com o Asaas ou por confirmação manual) — quem nunca paga não recebe número.
+        if (atual.status_pagamento === "CONFIRMED" && !atual.numero) {
+          atual = { ...atual, numero: await proximoNumeroEvento() };
+        }
+        if (atual !== inscrito) {
+          await s.setJSON(inscrito.cpf, atual);
+        }
+        atualizados.push(atual);
+      }
+      inscritos = atualizados;
     }
 
     if (qs.prova) {
