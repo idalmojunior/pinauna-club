@@ -193,10 +193,13 @@ function renderizarAguardando(){
 function renderizarChegadas(){
   const el = document.getElementById('lista-chegadas');
   if (!chegadasAtuais.length) { el.innerHTML = '<p class="vazio">Ninguém chegou ainda.</p>'; return; }
-  el.innerHTML = chegadasAtuais.map((c, i) => `
+  el.innerHTML = chegadasAtuais.map((c) => `
     <div class="chegada">
-      <span class="pos">${i + 1}º</span>
-      <span class="nome">${c.numero ? `<b>${c.numero}</b> — ` : ''}${c.nome}<br><small style="opacity:.7">${c.categoria}</small></span>
+      <span class="pos">${c.posicao_geral}º</span>
+      <span class="nome">
+        ${c.numero ? `<b>${c.numero}</b> — ` : ''}${c.nome}
+        <br><small style="opacity:.7">${c.categoria} · ${c.posicao_categoria}º na categoria</small>
+      </span>
       <button onclick="desfazerChegada('${c.cpf}')">Desfazer</button>
     </div>
   `).join('');

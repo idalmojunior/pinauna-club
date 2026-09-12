@@ -43,7 +43,20 @@ exports.handler = async (event) => {
       const registros = await Promise.all(blobs.map(async (b) => await sc.get(b.key, { type: "json" })));
       registros.sort((a, b) => new Date(a.chegada_em) - new Date(b.chegada_em));
 
-      return { statusCode: 200, headers, body: JSON.stringify({ ok: true, chegadas: registros }) };
+      // Calcula a posição geral e por categoria aqui mesmo — é o que alimenta tanto essa
+      // lista quanto o ranking público, mas assim a tela de controle já mostra tudo junto
+      // (o admin não precisa abrir outra aba durante a prova pra ver a colocação).
+      const contagemPorCategoria = {};
+      const comPosicao = registros.map((r, i) => {
+        contagemPorCategoria[r.categoria] = (contagemPorCategoria[r.categoria] || 0) + 1;
+        return {
+          ...r,
+          posicao_geral: i + 1,
+          posicao_categoria: contagemPorCategoria[r.categoria],
+        };
+      });
+
+      return { statusCode: 200, headers, body: JSON.stringify({ ok: true, chegadas: comPosicao }) };
     }
 
     if (event.httpMethod === "POST") {
