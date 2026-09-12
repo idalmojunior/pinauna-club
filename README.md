@@ -171,7 +171,7 @@ Subpágina separada da matrícula mensal, para inscrição e controle da competi
 
 ### Funções (Netlify)
 
-- `evento-inscricao.js` — recebe a ficha, cria/reaproveita o cliente no Asaas e gera uma **cobrança avulsa de R$100** (não uma assinatura — por isso não entra na régua nem nos relatórios das mensalidades). A referência da cobrança é `evento_pinauna-4ed-2026_<cpf>`, fácil de filtrar no painel do Asaas separado do resto.
+- `evento-inscricao.js` — recebe a ficha, cria/reaproveita o cliente no Asaas e gera uma **cobrança avulsa de R$150** (não uma assinatura — por isso não entra na régua nem nos relatórios das mensalidades). A referência da cobrança é `evento_pinauna-4ed-2026_<cpf>`, fácil de filtrar no painel do Asaas separado do resto.
 - `evento-status.js` (admin) — lista os inscritos; com `?sync=true` confere no Asaas se cada cobrança pendente já foi paga e atualiza o registro. É o que o botão "Atualizar pagamentos" da tela de controle chama.
 - `evento-chegada.js` (admin) — registra/desfaz a chegada de um atleta numa prova.
 - `evento-ranking.js` (pública) — calcula a colocação geral e por categoria a partir da ordem de chegada.

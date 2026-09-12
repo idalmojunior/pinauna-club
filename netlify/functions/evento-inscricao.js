@@ -13,7 +13,7 @@ const { asaasFetch, upsertCliente, getClientIp } = require("../../lib/asaas");
 
 const EVENTO_ID = "pinauna-4ed-2026";
 const EVENTO_NOME = "Pinaúna Club — 4ª Edição (Troféu Ana Serra)";
-const VALOR_INSCRICAO = 100;
+const VALOR_INSCRICAO = 150;
 const PRAZO_PAGAMENTO_DIAS = 3;
 
 const PROVAS_VALIDAS = ["2KM", "500M", "200M", "AQUATHLON"];
@@ -25,7 +25,15 @@ const CATEGORIAS_VALIDAS = [
   "JUVENIL (15-16)",
   "JUNIOR (17-19)",
   "SENIOR (20-24)",
-  "MASTER A-I (25+)",
+  "MASTER A (25-29)",
+  "MASTER B (30-34)",
+  "MASTER C (35-39)",
+  "MASTER D (40-44)",
+  "MASTER E (45-49)",
+  "MASTER F (50-54)",
+  "MASTER G (55-59)",
+  "MASTER H (60-64)",
+  "MASTER I (65-69)",
   "PCD",
 ];
 const TAMANHOS_VALIDOS = ["P", "M", "G", "GG"];
