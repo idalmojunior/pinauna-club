@@ -40,6 +40,7 @@
     --white: #ffffff;
     --gray: #aaaaaa;
     --gray-light: #e8e8e8;
+    --evento-banner-h: 40px;
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -51,6 +52,38 @@
     background: var(--black);
     color: var(--white);
     overflow-x: hidden;
+    padding-top: var(--evento-banner-h);
+  }
+
+  /* ─── FAIXA DO EVENTO ─── */
+  /* Fixa acima da nav (que também é fixed) — o padding-top do body e o "top" da nav
+     abrem espaço exato pra essa faixa não ficar por cima da logo/menu. Altura sempre
+     de uma linha só (texto encurtado no mobile) pra --evento-banner-h valer nos dois. */
+  .evento-banner {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1001;
+    height: var(--evento-banner-h);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(90deg,#ff5e1a,#b0299e,#5b2a9e);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: .3px;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 14px;
+  }
+  .evento-banner .texto-completo { display: inline; }
+  .evento-banner .texto-curto { display: none; }
+  @media (max-width: 560px) {
+    .evento-banner { font-size: 0.78rem; }
+    .evento-banner .texto-completo { display: none; }
+    .evento-banner .texto-curto { display: inline; }
   }
 
   /* ─── SCROLLBAR ─── */
@@ -84,7 +117,7 @@
   /* ─── NAV ─── */
   nav {
     position: fixed;
-    top: 0; left: 0; right: 0;
+    top: var(--evento-banner-h); left: 0; right: 0;
     z-index: 1000;
     padding: 12px 5%;
     display: flex;
@@ -1495,8 +1528,9 @@
 <body>
 
 <!-- Faixa do evento -->
-<a href="/evento/" style="display:block;text-align:center;background:linear-gradient(90deg,#ff5e1a,#b0299e,#5b2a9e);color:#fff;padding:10px 14px;font-weight:700;font-size:.9rem;text-decoration:none;letter-spacing:.3px;">
-  🏊 Pinaúna Club 4ª Edição — Troféu Ana Serra — 01/11/2026 — Inscreva-se →
+<a href="/evento/" class="evento-banner">
+  <span class="texto-completo">🏊 Pinaúna Club 4ª Edição — Troféu Ana Serra — 01/11/2026 — Inscreva-se →</span>
+  <span class="texto-curto">🏊 4ª Edição — 01/11 — Inscreva-se →</span>
 </a>
 
 <!-- WhatsApp Float -->
