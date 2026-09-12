@@ -1030,6 +1030,27 @@
     font-size: 2.2rem;
     color: rgba(255,255,255,0.5);
   }
+  .plano-funcional {
+    background: rgba(242,140,40,0.06);
+    border: 1px solid rgba(242,140,40,0.35);
+    border-radius: 12px;
+    padding: 20px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    max-width: 600px;
+    margin: 16px auto 0;
+    flex-wrap: wrap;
+  }
+  .plano-funcional-text strong { display: block; font-size: 1rem; margin-bottom: 3px; }
+  .plano-funcional-text span { font-size: 0.85rem; color: rgba(255,255,255,0.5); }
+  .plano-funcional-preco {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.2rem;
+    color: var(--orange);
+  }
+  .plano-funcional-preco small { display:block; font-family:'Segoe UI',Arial,sans-serif; font-size:0.7rem; color:rgba(255,255,255,0.45); }
 
   /* ─── FIDELIDADE ─── */
   #fidelidade {
@@ -1897,6 +1918,14 @@
       <div class="plano-avulsa-preco">R$ 30</div>
       <a href="https://wa.me/5571988924797?text=Quero%20fazer%20uma%20aula%20experimental!" target="_blank" class="plano-btn" style="white-space:nowrap">Agendar</a>
     </div>
+    <div class="plano-funcional">
+      <div class="plano-funcional-text">
+        <strong>🏋️ Funcional na Praia</strong>
+        <span>Todo sábado · 06h30 — treino funcional na areia, independente da natação</span>
+      </div>
+      <div class="plano-funcional-preco">R$ 75<small>/mês</small></div>
+      <button onclick="abrirMatriculaFuncional()" class="plano-btn" style="background:var(--orange);color:var(--black);border:none;cursor:pointer;white-space:nowrap;">Matricular no Funcional</button>
+    </div>
   </div>
 </section>
 
@@ -2178,13 +2207,31 @@
 
   const TERMO_VERSAO = 'pinauna-termo-v1-2026-09-11';
 
+  // Plano fixo fora do seletor de dias/periodicidade (ex.: Funcional) — quando definido,
+  // o resumo e o envio da matrícula usam esse plano_id em vez de calcular por dias+período.
+  let planoForcado = null;
+
   function abrirMatricula() {
+    planoForcado = null;
     const p = PRECOS[diasAtivo];
     const per = PERIODOS[periodoAtivo];
     const valorMensal = p.mensal;
     const total = Math.round(valorMensal * per.meses * (1 - per.desconto / 100));
     document.getElementById('resumoPlano').textContent =
       p.label + ' — ' + per.label + ' · R$' + total;
+    document.getElementById('etapa1').style.display = 'block';
+    document.getElementById('etapaTermo').style.display = 'none';
+    document.getElementById('etapa2').style.display = 'none';
+    document.getElementById('m_erro').style.display = 'none';
+    document.getElementById('m_erroTermo').style.display = 'none';
+    document.getElementById('m_aceiteTermo').checked = false;
+    document.getElementById('modalOverlay').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function abrirMatriculaFuncional() {
+    planoForcado = 'funcional_sabado';
+    document.getElementById('resumoPlano').textContent = 'Funcional na Praia — Sábado 06h30 · R$75/mês';
     document.getElementById('etapa1').style.display = 'block';
     document.getElementById('etapaTermo').style.display = 'none';
     document.getElementById('etapa2').style.display = 'none';
@@ -2257,7 +2304,7 @@
     }
 
     const per = PERIODOS[periodoAtivo];
-    const plano_id = per.ciclo + '_' + diasAtivo;
+    const plano_id = planoForcado || (per.ciclo + '_' + diasAtivo);
 
     btn.textContent = 'Processando...';
     btn.disabled = true;

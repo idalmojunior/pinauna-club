@@ -211,6 +211,8 @@ Nenhuma variável de ambiente nova é necessária — reaproveita `ASAAS_API_KEY
 | Sáb + Dom     | R$150  | R$428            | R$810            | R$1.530      |
 | Completo      | R$200  | R$570            | R$1.080          | R$2.040      |
 
+**Funcional na Praia** — todo sábado, 06h30, R$75/mês. Independente da natação (não entra no seletor de dias acima), só mensal, sem opção de trimestral/semestral/anual. Tem card próprio na seção de planos, com botão direto de matrícula (`plano_id: funcional_sabado`).
+
 ---
 
 ## Taxas do Asaas (estimativa)

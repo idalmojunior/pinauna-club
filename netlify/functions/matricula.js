@@ -53,6 +53,9 @@ const PLANOS = {
   anual_qua_dom:         { nome: "Qua+Dom — Anual",       valor: 1530, ciclo: "YEARLY",    meses: 12, desconto: 15 },
   anual_sab_dom:         { nome: "Sáb+Dom — Anual",       valor: 1530, ciclo: "YEARLY",    meses: 12, desconto: 15 },
   anual_completo:        { nome: "Completo — Anual",      valor: 2040, ciclo: "YEARLY",    meses: 12, desconto: 15 },
+
+  // ── Funcional na praia (independente da natação — só mensal) ─
+  funcional_sabado:      { nome: "Funcional na Praia — Sábado 06h30 — Mensal", valor: 75, ciclo: "MONTHLY", meses: 1, desconto: 0 },
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────
