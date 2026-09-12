@@ -48,6 +48,22 @@
   .numero{font-weight:800;color:var(--amarelo);}
   .btn-marcar{padding:6px 10px;border-radius:8px;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:.75rem;font-weight:600;cursor:pointer;}
   .btn-marcar:hover{background:rgba(255,255,255,.3);}
+  .acoes-linha{display:flex;gap:6px;flex-wrap:wrap;}
+
+  .modal-fundo{
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;
+    align-items:center;justify-content:center;padding:16px;
+  }
+  .modal-fundo.aberto{display:flex;}
+  .modal-caixa{background:var(--tinta);border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:22px;max-width:380px;width:100%;}
+  .modal-caixa h3{margin:0 0 4px;font-size:1.05rem;}
+  .modal-caixa .modal-sub{opacity:.7;font-size:.8rem;margin:0 0 16px;}
+  .modal-caixa label{display:block;font-size:.82rem;font-weight:600;margin:12px 0 6px;}
+  .modal-caixa select, .modal-caixa input{width:100%;padding:11px 12px;border-radius:10px;border:none;font-size:.9rem;background:#fff;color:#222;}
+  .modal-botoes{display:flex;gap:10px;margin-top:20px;}
+  .modal-botoes button{flex:1;padding:12px;border-radius:10px;border:none;font-weight:700;cursor:pointer;font-size:.88rem;}
+  .modal-botoes .btn-cancelar{background:rgba(255,255,255,.12);color:#fff;}
+  .modal-botoes .btn-salvar{background:var(--amarelo);color:var(--tinta);}
 
   .vazio{opacity:.6;font-size:.85rem;padding:20px 4px;}
   .toast{
@@ -107,6 +123,7 @@
           <th>Nº</th>
           <th>Nome</th>
           <th>Categoria</th>
+          <th>Idade na prova</th>
           <th>Prova</th>
           <th>Camisa</th>
           <th>Telefone</th>
@@ -116,9 +133,43 @@
         </tr>
       </thead>
       <tbody id="corpo-tabela">
-        <tr><td colspan="9"><p class="vazio">Carregando...</p></td></tr>
+        <tr><td colspan="10"><p class="vazio">Carregando...</p></td></tr>
       </tbody>
     </table>
+  </div>
+</div>
+
+<div class="modal-fundo" id="modal-editar">
+  <div class="modal-caixa">
+    <h3>Corrigir cadastro</h3>
+    <p class="modal-sub" id="modal-nome-atleta"></p>
+    <input type="hidden" id="edit-cpf">
+    <label for="edit-nascimento">Data de nascimento</label>
+    <input type="date" id="edit-nascimento">
+    <label for="edit-categoria">Categoria</label>
+    <select id="edit-categoria">
+      <option value="LOMANTO">Categoria Lomanto</option>
+      <option value="MIRIM (9-10)">Mirim — 9 e 10 anos</option>
+      <option value="PETIZ (11-12)">Petiz — 11 e 12 anos</option>
+      <option value="INFANTIL (13-14)">Infantil — 13 e 14 anos</option>
+      <option value="JUVENIL (15-16)">Juvenil — 15 e 16 anos</option>
+      <option value="JUNIOR (17-19)">Junior — 17 a 19 anos</option>
+      <option value="SENIOR (20-24)">Sênior — 20 a 24 anos</option>
+      <option value="MASTER A (25-29)">Master A — 25 a 29 anos</option>
+      <option value="MASTER B (30-34)">Master B — 30 a 34 anos</option>
+      <option value="MASTER C (35-39)">Master C — 35 a 39 anos</option>
+      <option value="MASTER D (40-44)">Master D — 40 a 44 anos</option>
+      <option value="MASTER E (45-49)">Master E — 45 a 49 anos</option>
+      <option value="MASTER F (50-54)">Master F — 50 a 54 anos</option>
+      <option value="MASTER G (55-59)">Master G — 55 a 59 anos</option>
+      <option value="MASTER H (60-64)">Master H — 60 a 64 anos</option>
+      <option value="MASTER I (65-69)">Master I — 65 a 69 anos</option>
+      <option value="PCD">Categoria PCD</option>
+    </select>
+    <div class="modal-botoes">
+      <button class="btn-cancelar" onclick="fecharEdicao()">Cancelar</button>
+      <button class="btn-salvar" onclick="salvarEdicao()">Salvar</button>
+    </div>
   </div>
 </div>
 
@@ -130,6 +181,19 @@ let inscritosAtuais = [];
 
 const NOMES_PROVA = { "2KM":"2km", "500M":"500m", "200M":"200m", "AQUATHLON":"Aquathlon" };
 const VALOR_INSCRICAO = 150;
+const DATA_PROVA = new Date('2026-11-01T00:00:00Z');
+
+function idadeNaProva(dataNascimento){
+  if (!dataNascimento) return null;
+  const nasc = new Date(dataNascimento + 'T00:00:00Z');
+  if (Number.isNaN(nasc.getTime())) return null;
+  let idade = DATA_PROVA.getUTCFullYear() - nasc.getUTCFullYear();
+  const aindaNaoFezAniversario =
+    (DATA_PROVA.getUTCMonth() < nasc.getUTCMonth()) ||
+    (DATA_PROVA.getUTCMonth() === nasc.getUTCMonth() && DATA_PROVA.getUTCDate() < nasc.getUTCDate());
+  if (aindaNaoFezAniversario) idade--;
+  return idade;
+}
 
 function entrar(){
   const v = document.getElementById('senha').value.trim();
@@ -171,14 +235,14 @@ async function carregar(sync){
     const json = await resp.json();
     if (!resp.ok) {
       toast(json.erro || "Erro ao carregar inscritos");
-      corpo.innerHTML = `<tr><td colspan="9"><p class="vazio">Erro ao carregar: ${json.erro || 'tente de novo'}.</p></td></tr>`;
+      corpo.innerHTML = `<tr><td colspan="10"><p class="vazio">Erro ao carregar: ${json.erro || 'tente de novo'}.</p></td></tr>`;
       return;
     }
     inscritosAtuais = json.inscritos || [];
     renderizar();
   } catch (err) {
     toast("Falha de conexão");
-    corpo.innerHTML = '<tr><td colspan="7"><p class="vazio">Falha de conexão. Toque em "Atualizar tela" pra tentar de novo.</p></td></tr>';
+    corpo.innerHTML = '<tr><td colspan="10"><p class="vazio">Falha de conexão. Toque em "Atualizar tela" pra tentar de novo.</p></td></tr>';
   }
 }
 
@@ -230,7 +294,7 @@ function renderizar(){
     (pagos * VALOR_INSCRICAO).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
 
   if (!lista.length) {
-    corpo.innerHTML = '<tr><td colspan="9"><p class="vazio">Nenhum inscrito encontrado com esse filtro.</p></td></tr>';
+    corpo.innerHTML = '<tr><td colspan="10"><p class="vazio">Nenhum inscrito encontrado com esse filtro.</p></td></tr>';
     return;
   }
 
@@ -238,7 +302,8 @@ function renderizar(){
     const cls = classificarStatus(i.status_pagamento);
     const rotulo = cls === 'pago' ? 'Pago' : (cls === 'pendente' ? 'Pendente' : i.status_pagamento || '–');
     const foneNumeros = formatarFone(i.telefone);
-    const acao = cls === 'pago'
+    const idade = idadeNaProva(i.data_nascimento);
+    const botaoPagar = cls === 'pago'
       ? ''
       : `<button class="btn-marcar" onclick="marcarPago('${i.cpf}')">Marcar pago</button>`;
     return `
@@ -246,6 +311,7 @@ function renderizar(){
         <td class="numero">${i.numero || '–'}</td>
         <td>${i.nome || ''}</td>
         <td>${i.categoria || ''}</td>
+        <td>${idade !== null ? idade + ' anos' : '–'}</td>
         <td>${NOMES_PROVA[i.prova] || i.prova || ''}</td>
         <td>${i.tamanho_camisa || ''}</td>
         <td>${foneNumeros !== '–' ? `<a class="fone-link" target="_blank" href="https://wa.me/55${foneNumeros}">${foneNumeros}</a>` : '–'}</td>
@@ -254,10 +320,51 @@ function renderizar(){
           ${i.pago_manualmente ? '<span class="tag-manual">recebido direto</span>' : ''}
         </td>
         <td>${formatarData(i.inscrito_em)}</td>
-        <td>${acao}</td>
+        <td>
+          <div class="acoes-linha">
+            ${botaoPagar}
+            <button class="btn-marcar" onclick="abrirEdicao('${i.cpf}')">Corrigir cadastro</button>
+          </div>
+        </td>
       </tr>
     `;
   }).join('');
+}
+
+function abrirEdicao(cpf){
+  const inscrito = inscritosAtuais.find(i => i.cpf === cpf);
+  if (!inscrito) return;
+  document.getElementById('edit-cpf').value = cpf;
+  document.getElementById('modal-nome-atleta').textContent = inscrito.nome || '';
+  document.getElementById('edit-nascimento').value = inscrito.data_nascimento || '';
+  document.getElementById('edit-categoria').value = inscrito.categoria || '';
+  document.getElementById('modal-editar').classList.add('aberto');
+}
+
+function fecharEdicao(){
+  document.getElementById('modal-editar').classList.remove('aberto');
+}
+
+async function salvarEdicao(){
+  const cpf = document.getElementById('edit-cpf').value;
+  const data_nascimento = document.getElementById('edit-nascimento').value;
+  const categoria = document.getElementById('edit-categoria').value;
+  if (!data_nascimento || !categoria) { toast("Preencha data de nascimento e categoria"); return; }
+
+  try {
+    const resp = await fetch('/api/evento-editar-inscrito', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
+      body: JSON.stringify({ cpf, categoria, data_nascimento }),
+    });
+    const json = await resp.json();
+    if (!resp.ok) { toast(json.erro || "Erro ao salvar correção"); return; }
+    toast("Cadastro corrigido!");
+    fecharEdicao();
+    await carregar(false);
+  } catch (err) {
+    toast("Falha de conexão ao salvar correção");
+  }
 }
 
 async function marcarPago(cpf){
