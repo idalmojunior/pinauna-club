@@ -2503,18 +2503,24 @@
     const grid = document.getElementById('mareGrid');
     grid.innerHTML = marés.map(m => `<div class="mare-card ${m.a ? 'alta' : 'baixa'}"><div class="mare-card-time">${fmtHora(m.h)}</div><div class="mare-card-type">${m.a ? '⬆ Maré Alta' : '⬇ Maré Baixa'}</div><div class="mare-card-height">${m.t.toFixed(1)}</div><div class="mare-card-unit">metros</div></div>`).join('');
     desenharGrafico(marés);
+    // Maré baixa é ótima pra prática; maré muito cheia é que pede mais orientação do
+    // professor — por isso comparamos a altura média no horário de treino com a própria
+    // faixa (baixa↔alta) do dia, em vez de um valor absoluto fixo.
     const horasTreino = [6.0, 6.5, 7.0, 7.5, 8.0];
-    const minNaTreino = Math.min(...horasTreino.map(h => interpolarAltura(marés, h)));
+    const alturasTreino = horasTreino.map(h => interpolarAltura(marés, h));
+    const alturaMediaTreino = alturasTreino.reduce((a,b) => a+b, 0) / alturasTreino.length;
+    const faixaMare = maxAlta - minBaixa;
+    const posicaoRelativa = faixaMare > 0 ? (alturaMediaTreino - minBaixa) / faixaMare : 0.5;
     const alertEl = document.getElementById('mareAlerta');
-    if (minNaTreino >= 0.6 && maxAlta >= 2.0) {
+    if (posicaoRelativa <= 0.35) {
       alertEl.className = 'mare-treino-alert ideal fade-up visible';
-      alertEl.innerHTML = '<div class="mare-treino-alert-icon">✅</div><div><strong>Condições ideais para o treino!</strong> Maré com boa amplitude e altura suficiente nas faixas de treino (06h–08h). Esperamos você na água!</div>';
-    } else if (minNaTreino >= 0.3) {
+      alertEl.innerHTML = '<div class="mare-treino-alert-icon">✅</div><div><strong>Condições ideais para o treino!</strong> Maré baixa nos horários de treino (06h–08h) — excelente para a prática. Esperamos você na água!</div>';
+    } else if (posicaoRelativa <= 0.65) {
       alertEl.className = 'mare-treino-alert ok fade-up visible';
-      alertEl.innerHTML = '<div class="mare-treino-alert-icon">🌊</div><div><strong>Condições adequadas para o treino.</strong> Altura aceitável nos horários de treino. Confirme condições no local com o professor.</div>';
+      alertEl.innerHTML = '<div class="mare-treino-alert-icon">🌊</div><div><strong>Condições adequadas para o treino.</strong> Altura moderada nos horários de treino. Confirme condições no local com o professor.</div>';
     } else {
       alertEl.className = 'mare-treino-alert atencao fade-up visible';
-      alertEl.innerHTML = '<div class="mare-treino-alert-icon">⚠️</div><div><strong>Atenção: maré muito baixa nos horários de treino.</strong> Altura reduzida pode limitar o nado. Aguarde orientação do professor.</div>';
+      alertEl.innerHTML = '<div class="mare-treino-alert-icon">⚠️</div><div><strong>Atenção: maré muito cheia nos horários de treino.</strong> Com o mar mais cheio, o professor vai passar orientações extras antes de entrar na água.</div>';
     }
   }
 
