@@ -189,6 +189,17 @@ Nenhuma variável de ambiente nova é necessária — reaproveita `ASAAS_API_KEY
 
 ---
 
+## Tábua de maré
+
+A seção "Tábua de Maré" do site consulta maré real de Salvador/BA, não mais uma tabela fixa de exemplos.
+
+- **`netlify/functions/mare.js`** (pública) — `GET /api/mare?data=YYYY-MM-DD`. Busca a altura do mar hora a hora na [Open-Meteo Marine API](https://open-meteo.com/en/docs/marine-weather-api) (gratuita, sem chave) e extrai os horários de maré alta/baixa por interpolação. Cobre de ~90 dias atrás até ~7 dias à frente de hoje (limite da própria API). Fora dessa janela — por exemplo, ao consultar a maré do dia do evento, meses à frente — devolve uma **estimativa aproximada**, claramente marcada como tal (nunca disfarçada de previsão real).
+- O retorno inclui `real: true/false` e `fonte` (`"open-meteo"`, `"estimativa-fora-do-alcance"` ou `"estimativa-fallback"`, este último se a Open-Meteo falhar no momento da consulta). O site mostra um selo — azul "Previsão real (Open-Meteo)" ou laranja "Estimativa" — pra deixar claro qual é qual.
+- Cada data consultada fica em cache indefinidamente num Netlify Blobs store próprio (`mare-cache`), já que a previsão de maré pra uma data fixa não muda — isso evita bater na Open-Meteo de novo pra quem já foi consultado.
+- Nenhuma variável de ambiente nova é necessária.
+
+---
+
 ## Programa Indique & Ganhe
 
 - **Quem pode indicar:** apenas alunos com plano semestral ou anual
